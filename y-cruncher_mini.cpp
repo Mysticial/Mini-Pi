@@ -24,7 +24,6 @@
 #endif
 
 
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -41,6 +40,10 @@ using std::complex;
 #else
 #include <time.h>
 #endif
+
+// Defines for math constants
+#define M_PI 3.14159265358979323846
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
