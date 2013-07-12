@@ -105,6 +105,9 @@ void ycl_dump_to_file(const char *path,const std::string &str){
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  Fast Fourier Transform
+#ifndef M_PI
+#define M_PI       3.14159265358979323846
+#endif
 void ycl_fft_forward(complex<double> *T,int k){
     //  Fast Fourier Transform
     //  This function performs a forward FFT of length 2^k.
@@ -281,11 +284,10 @@ void ycl_fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  BigFloat object
-#define YCL_BIGFLOAT_EXTRA_PRECISION    2
 /*  This is the big floating-point object. It represents an arbitrary precision
  *  floating-point number.
  * 
- *  It's numerical value is equal to:
+ *  Its numerical value is equal to:
  * 
  *      word = 10^9
  *      word^exp * (T[0] + T[1]*word + T[2]*word^2 + ... + T[L - 1]*word^(L - 1))
@@ -299,6 +301,7 @@ void ycl_fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
  *  Zero is represented as (sign = true) and (L = 0).
  * 
  */
+#define YCL_BIGFLOAT_EXTRA_PRECISION    2
 class ycl_BigFloat{
 public:
     ycl_BigFloat(ycl_BigFloat &&x);
