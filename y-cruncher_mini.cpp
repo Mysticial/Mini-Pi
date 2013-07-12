@@ -292,7 +292,7 @@ void ycl_fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
  *      word = 10^9
  *      word^exp * (T[0] + T[1]*word + T[2]*word^2 + ... + T[L - 1]*word^(L - 1))
  * 
- *  T is an array of 32-bit integers. Each integer is stores 9 decimal digits
+ *  T is an array of 32-bit integers. Each integer stores 9 decimal digits
  *  and must always have a value in the range [0, 999999999].
  * 
  *  T[L - 1] must never be zero. 
@@ -473,24 +473,22 @@ std::string ycl_BigFloat::to_string(size_t digits) const{
     //  Get a string with the digits before the decimal place.
     std::string before_decimal = std::to_string((long long)T[L - 1]);
 
+    //  Nothing after the decimal place.
     if (exponent >= 0){
-        if (sign)
+        if (sign){
             return before_decimal + ".";
-        else
+        }else{
             return std::string("-") + before_decimal + ".";
+        }
     }
 
+    //  Get digits after the decimal place.
+    std::string after_decimal = str.substr((size_t)(str.size() + exponent),(size_t)-exponent);
+
     if (sign){
-        return
-            before_decimal +
-            "." +
-            str.substr((size_t)(str.size() + exponent),(size_t)-exponent);
+        return before_decimal + "." + after_decimal;
     }else{
-        return
-            std::string("-") + 
-            before_decimal +
-            "." +
-            str.substr((size_t)(str.size() + exponent),(size_t)-exponent);
+        return std::string("-") + before_decimal + "." + after_decimal;
     }
 }
 std::string ycl_BigFloat::to_string_sci(size_t digits) const{
@@ -543,7 +541,7 @@ uint32_t ycl_BigFloat::word_at(int64_t mag) const{
     //  This is useful for additions where you need to access a specific "digit place"
     //  of the operand without having to worry if it's out-of-bounds.
 
-    //  This function mathematically equal to:
+    //  This function is mathematically equal to:
     //      (return value) = floor(this * (10^9)^-mag) % 10^9
 
     if (mag < exp)
@@ -701,7 +699,7 @@ ycl_BigFloat ycl_BigFloat::usub(const ycl_BigFloat &x,size_t p) const{
     //  Allocate mantissa
     z.T = std::unique_ptr<uint32_t[]>(new uint32_t[z.L]);
 
-    //  Add
+    //  Subtract
     int32_t carry = 0;
     for (size_t c = 0; bot < top; bot++, c++){
         int32_t word = (int32_t)word_at(bot) - (int32_t)x.word_at(bot) - carry;
@@ -832,7 +830,7 @@ ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
     //  Yeah, this is slow for small sizes, but it's asympotically optimal.
 
     //  3 digits per point is small enough to not encounter round-off error
-    //  until a transform size of 2^29.
+    //  until a transform size of 2^30.
     //  A transform length of 2^29 allows for the maximum product size to be
     //  2^29 * 3 = 1,610,612,736 decimal digits.
     if (k > 29)
@@ -1156,9 +1154,8 @@ int main(){
 
     size_t digits = 1000000;
 
-    ycl_dump_to_file("e.txt" ,ycl_e (digits,true).to_string(digits));
-    ycl_dump_to_file("pi.txt",ycl_Pi(digits,true).to_string(digits));
-
+    ycl_dump_to_file("e.txt" ,ycl_e (digits,true).to_string(digits + 1));
+    ycl_dump_to_file("pi.txt",ycl_Pi(digits,true).to_string(digits + 1));
 
 #ifdef _WIN32
     system("pause");
