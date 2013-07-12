@@ -17,7 +17,12 @@
  */
 
 //  Visual Studio 2010 doesn't have <chrono>.
-#define USE_CHRONO
+#if defined(_MSC_VER) && (_MSC_VER <= 1600)
+#define USE_CHRONO 0
+#else
+#define USE_CHRONO 1
+#endif
+
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -31,7 +36,7 @@ using std::cout;
 using std::endl;
 using std::complex;
 
-#ifdef USE_CHRONO
+#if USE_CHRONO
 #include <chrono>
 #else
 #include <time.h>
@@ -79,7 +84,7 @@ void ycl_print_words(uint32_t *T,size_t L){
 //  Helpers
 double ycl_wall_clock(){
     //  Get the clock in seconds.
-#ifdef USE_CHRONO
+#if USE_CHRONO
     auto ratio_object = std::chrono::high_resolution_clock::period();
     double ratio = (double)ratio_object.num / ratio_object.den;
     return std::chrono::high_resolution_clock::now().time_since_epoch().count() * ratio;
