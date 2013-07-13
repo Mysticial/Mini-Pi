@@ -1,4 +1,4 @@
-y-cruncher-Mini
+Mini Pi
 ===============
 
     Author           : Alexander J. Yee
@@ -20,7 +20,7 @@ To do this, the program implements the following algorithms:
  - Binary Splitting
 
 The focus of this project is conciseness and readability, not optimization.
-So this program is very slow - more than 100x slower than y-cruncher itself.
+So this program is very slow - more than 100x slower than y-cruncher.
 Nevertheless, it runs in quasi-linear time. So it can feasibly compute Pi to
 hundreds of millions of digits if you're willing to wait.
 
@@ -38,13 +38,13 @@ For what it's worth, here's a short list of optimizations to try out:
  - Hard code larger FFT base sizes.
  - Parallelize the computation.
  - Vectorization and SIMD
- - Implement the Basecase and Karatsuba multiplication algorithms to better
-   handle small multiplications.
+ - Implement the Basecase and Karatsuba algorithms to better handle small multiplications.
  - Small number optimization to reduce heap allocation calls.
  - Binary Splitting always splits the series in half. But half isn't optimal.
+ - Micro-optmizations such as manual loop-unrolling.
 
 
 Files:
- - y-cruncher_mini.cpp             - This is the baseline. No optimizations.
- - y-cruncher_mini_optimized_1.cpp - This applies two very basic optimizations
+ - mini-pi.cpp             - This is the baseline. No optimizations.
+ - mini-pi_optimized_1.cpp - This applies two very basic optimizations
                                      for a 2-4x speedup.
