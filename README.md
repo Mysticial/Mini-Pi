@@ -1,9 +1,9 @@
 y-cruncher-Mini
 ===============
 
-Author           : Alexander J. Yee
-Date Created     : 07/09/2013
-Last Modified    : 07/13/2013
+    Author           : Alexander J. Yee
+    Date Created     : 07/09/2013
+    Last Modified    : 07/13/2013
 
 A miniature program that can compute Pi to millions of digits.
 
