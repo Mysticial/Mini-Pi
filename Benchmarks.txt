@@ -1,0 +1,11 @@
+
+Benchmarks: Pi
+Size     : 10,000,000 digits
+Hardware : Intel Core i7 2600k @ 4.2 GHz
+
+ - mini-pi.cpp:                             1061.61
+ - mini-pi_optimized_1_cached_twiddles.cpp: 415.686
+ - mini-pi_optimized_2_SSE3.cpp:            117.147
+ - mini-pi_optimized_3_OpenMP.cpp           56.5172
+ - y-cruncher v0.6.2 1 thread:              4.905
+ - y-cruncher v0.6.2 8 threads:             1.563
