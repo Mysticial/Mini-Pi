@@ -1159,5 +1159,8 @@ int main(){
 
 #ifdef _WIN32
     system("pause");
-#endif
+#else
+    cout << "Press Enter to continue . . .";
+    std::cin.get();
+#endif 
 }
