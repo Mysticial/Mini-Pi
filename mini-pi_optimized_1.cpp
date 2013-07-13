@@ -1,15 +1,15 @@
-/*  y-cruncher Mini
+/*  Mini Pi
  *
  * Author           : Alexander J. Yee
  * Date Created     : 07/09/2013
- * Last Modified    : 07/12/2013
+ * Last Modified    : 07/13/2013
  * 
  *  This is a miniature program that can compute Pi and e to millions of digits
  *  in quasi-linear runtime.
  * 
  *  This program is very slow since it does almost no optimizations. But it uses
  *  asymptotically capable algorithms. So it is capable of computing millions of
- *  digits of Pi - albeit 100x slower than y-cruncher itself.
+ *  digits of Pi - albeit 100x slower than y-cruncher.
  * 
  *  The limit of this program is about 800 million digits. Any higher and the
  *  FFT will encounter malicious round-off error.
@@ -47,10 +47,11 @@ using std::complex;
 #include <time.h>
 #endif
 
+namespace Mini_Pi{
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  Debug Printing
-uint32_t ycl_rand_word(){
+uint32_t rand_word(){
     return (uint32_t)(
             (rand() & 0xf) <<  0 |
             (rand() & 0xf) <<  8 |
@@ -58,19 +59,19 @@ uint32_t ycl_rand_word(){
             (rand() & 0xf) << 24
         ) % 1000000000;
 }
-complex<double> ycl_rand_complex(){
+complex<double> rand_complex(){
     double r = (double)(rand() % 1000);
     double i = (double)(rand() % 1000);
     return complex<double>(r,i);
 }
-void ycl_print_fft(complex<double> *T,int k){
+void print_fft(complex<double> *T,int k){
     int length = 1 << k;
     for (int c = 0; c < length; c++){
         std::cout << T[c].real() << " + " << T[c].imag() << "i" << " , ";
     }
     std::cout << std::endl;
 }
-void ycl_print_word(uint32_t word){
+void print_word(uint32_t word){
     char str[] = "012345678";
     for (int c = 8; c >= 0; c--){
         str[c] = word % 10 + '0';
@@ -78,16 +79,16 @@ void ycl_print_word(uint32_t word){
     }
     std::cout << str;
 }
-void ycl_print_words(uint32_t *T,size_t L){
+void print_words(uint32_t *T,size_t L){
     while (L-- > 0){
-        ycl_print_word(T[L]);
+        print_word(T[L]);
     }
     std::cout << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  Helpers
-double ycl_wall_clock(){
+double wall_clock(){
     //  Get the clock in seconds.
 #if USE_CHRONO
     auto ratio_object = std::chrono::high_resolution_clock::period();
@@ -97,7 +98,7 @@ double ycl_wall_clock(){
     return (double)clock() / CLOCKS_PER_SEC;
 #endif
 }
-void ycl_dump_to_file(const char *path,const std::string &str){
+void dump_to_file(const char *path,const std::string &str){
     //  Dump a string to a file.
 
     FILE *file = fopen(path,"wb");
@@ -113,18 +114,18 @@ void ycl_dump_to_file(const char *path,const std::string &str){
 #ifndef M_PI
 #define M_PI       3.14159265358979323846
 #endif
-std::vector<std::vector<complex<double>>> ycl_twiddle_table;
-void ycl_fft_ensure_table(int k){
+std::vector<std::vector<complex<double>>> twiddle_table;
+void fft_ensure_table(int k){
     //  Makes sure the twiddle factor table is large enough to handle an FFT of
     //  size 2^k.
 
-    int current_k = (int)ycl_twiddle_table.size() - 1;
+    int current_k = (int)twiddle_table.size() - 1;
     if (current_k >= k)
         return;
 
     //  Do one level at a time
     if (k - 1 > current_k){
-        ycl_fft_ensure_table(k - 1);
+        fft_ensure_table(k - 1);
     }
 
     size_t length = 1 << k;
@@ -141,9 +142,9 @@ void ycl_fft_ensure_table(int k){
     }
 
     //  Push into main table.
-    ycl_twiddle_table.push_back(std::move(sub_table));
+    twiddle_table.push_back(std::move(sub_table));
 }
-void ycl_fft_forward(complex<double> *T,int k){
+void fft_forward(complex<double> *T,int k){
     //  Fast Fourier Transform
     //  This function performs a forward FFT of length 2^k.
 
@@ -167,7 +168,7 @@ void ycl_fft_forward(complex<double> *T,int k){
     size_t half_length = length / 2;
 
     //  Get local twiddle table.
-    std::vector<complex<double>> &local_table = ycl_twiddle_table[k];
+    std::vector<complex<double>> &local_table = twiddle_table[k];
 
     //  Perform FFT reduction into two halves.
     for (size_t c = 0; c < half_length; c++){
@@ -184,12 +185,12 @@ void ycl_fft_forward(complex<double> *T,int k){
     }
 
     //  Recursively perform FFT on lower elements.
-    ycl_fft_forward(T,k - 1);
+    fft_forward(T,k - 1);
 
     //  Recursively perform FFT on upper elements.
-    ycl_fft_forward(T + half_length,k - 1);
+    fft_forward(T + half_length,k - 1);
 }
-void ycl_fft_inverse(complex<double> *T,int k){
+void fft_inverse(complex<double> *T,int k){
     //  Fast Fourier Transform
     //  This function performs an inverse FFT of length 2^k.
 
@@ -213,13 +214,13 @@ void ycl_fft_inverse(complex<double> *T,int k){
     size_t half_length = length / 2;
 
     //  Recursively perform FFT on lower elements.
-    ycl_fft_inverse(T,k - 1);
+    fft_inverse(T,k - 1);
 
     //  Recursively perform FFT on upper elements.
-    ycl_fft_inverse(T + half_length,k - 1);
+    fft_inverse(T + half_length,k - 1);
 
     //  Get local twiddle table.
-    std::vector<complex<double>> &local_table = ycl_twiddle_table[k];
+    std::vector<complex<double>> &local_table = twiddle_table[k];
 
     //  Perform FFT reduction into two halves.
     for (size_t c = 0; c < half_length; c++){
@@ -235,7 +236,7 @@ void ycl_fft_inverse(complex<double> *T,int k){
         T[c + half_length]  = a - b;
     }
 }
-void ycl_fft_pointwise(complex<double> *T,const complex<double> *A,int k){
+void fft_pointwise(complex<double> *T,const complex<double> *A,int k){
     //  Performs pointwise multiplications of two FFT arrays.
 
     //Parameters:
@@ -247,7 +248,7 @@ void ycl_fft_pointwise(complex<double> *T,const complex<double> *A,int k){
         T[c] = T[c] * A[c];
     }
 }
-void ycl_int_to_fft(complex<double> *T,int k,const uint32_t *A,size_t AL){
+void int_to_fft(complex<double> *T,int k,const uint32_t *A,size_t AL){
     //  Convert word array into FFT array. Put 3 decimal digits per complex point.
 
     //Parameters:
@@ -280,7 +281,7 @@ void ycl_int_to_fft(complex<double> *T,int k,const uint32_t *A,size_t AL){
     while (T < Tstop)
         *T++ = complex<double>(0,0);
 }
-void ycl_fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
+void fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
     //  Convert FFT array back to word array. Perform rounding and carryout.
 
     //Parameters:
@@ -349,13 +350,13 @@ void ycl_fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
  * 
  */
 #define YCL_BIGFLOAT_EXTRA_PRECISION    2
-class ycl_BigFloat{
+class BigFloat{
 public:
-    ycl_BigFloat(ycl_BigFloat &&x);
-    ycl_BigFloat& operator=(ycl_BigFloat &&x);
+    BigFloat(BigFloat &&x);
+    BigFloat& operator=(BigFloat &&x);
 
-    ycl_BigFloat();
-    ycl_BigFloat(uint32_t x,bool sign = true);
+    BigFloat();
+    BigFloat(uint32_t x,bool sign = true);
 
     std::string to_string    (size_t digits = 0) const;
     std::string to_string_sci(size_t digits = 0) const;
@@ -364,12 +365,12 @@ public:
     uint32_t word_at(int64_t mag) const;
 
     void negate();
-    ycl_BigFloat mul(uint32_t x) const;
-    ycl_BigFloat add(const ycl_BigFloat &x,size_t p = 0) const;
-    ycl_BigFloat sub(const ycl_BigFloat &x,size_t p = 0) const;
-    ycl_BigFloat mul(const ycl_BigFloat &x,size_t p = 0) const;
-    ycl_BigFloat rcp(size_t p) const;
-    ycl_BigFloat div(const ycl_BigFloat &x,size_t p) const;
+    BigFloat mul(uint32_t x) const;
+    BigFloat add(const BigFloat &x,size_t p = 0) const;
+    BigFloat sub(const BigFloat &x,size_t p = 0) const;
+    BigFloat mul(const BigFloat &x,size_t p = 0) const;
+    BigFloat rcp(size_t p) const;
+    BigFloat div(const BigFloat &x,size_t p) const;
 
 private:
     bool sign;      //  true = positive or zero, false = negative
@@ -379,16 +380,16 @@ private:
 
     //  Internal helpers
     int64_t to_string_trimmed(size_t digits,std::string &str) const;
-    int ucmp(const ycl_BigFloat &x) const;
-    ycl_BigFloat uadd(const ycl_BigFloat &x,size_t p) const;
-    ycl_BigFloat usub(const ycl_BigFloat &x,size_t p) const;
+    int ucmp(const BigFloat &x) const;
+    BigFloat uadd(const BigFloat &x,size_t p) const;
+    BigFloat usub(const BigFloat &x,size_t p) const;
 
-    friend ycl_BigFloat invsqrt(uint32_t x,size_t p);
+    friend BigFloat invsqrt(uint32_t x,size_t p);
 };
-ycl_BigFloat invsqrt(uint32_t x,size_t p);
+BigFloat invsqrt(uint32_t x,size_t p);
 ////////////////////////////////////////////////////////////////////////////////
 //  Move operators
-ycl_BigFloat::ycl_BigFloat(ycl_BigFloat &&x)
+BigFloat::BigFloat(BigFloat &&x)
     : sign(x.sign)
     , exp(x.exp)
     , L(x.L)
@@ -398,7 +399,7 @@ ycl_BigFloat::ycl_BigFloat(ycl_BigFloat &&x)
     x.exp   = 0;
     x.L     = 0;
 }
-ycl_BigFloat& ycl_BigFloat::operator=(ycl_BigFloat &&x){
+BigFloat& BigFloat::operator=(BigFloat &&x){
     sign    = x.sign;
     exp     = x.exp;
     L       = x.L;
@@ -412,12 +413,12 @@ ycl_BigFloat& ycl_BigFloat::operator=(ycl_BigFloat &&x){
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Constructors
-ycl_BigFloat::ycl_BigFloat()
+BigFloat::BigFloat()
     : sign(true)
     , exp(0)
     , L(0)
 {}
-ycl_BigFloat::ycl_BigFloat(uint32_t x,bool sign_)
+BigFloat::BigFloat(uint32_t x,bool sign_)
     : sign(true)
     , exp(0)
     , L(1)
@@ -435,7 +436,7 @@ ycl_BigFloat::ycl_BigFloat(uint32_t x,bool sign_)
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  String Conversion
-int64_t ycl_BigFloat::to_string_trimmed(size_t digits,std::string &str) const{
+int64_t BigFloat::to_string_trimmed(size_t digits,std::string &str) const{
     //  Converts this object to a string with "digits" significant figures.
 
     //  After calling this function, the following expression is equal to the
@@ -494,7 +495,7 @@ int64_t ycl_BigFloat::to_string_trimmed(size_t digits,std::string &str) const{
 
     return exponent;
 }
-std::string ycl_BigFloat::to_string(size_t digits) const{
+std::string BigFloat::to_string(size_t digits) const{
     //  Convert this number to a string. Auto-select format type.
     if (L == 0)
         return "0.";
@@ -538,7 +539,7 @@ std::string ycl_BigFloat::to_string(size_t digits) const{
         return std::string("-") + before_decimal + "." + after_decimal;
     }
 }
-std::string ycl_BigFloat::to_string_sci(size_t digits) const{
+std::string BigFloat::to_string_sci(size_t digits) const{
     //  Convert to string in scientific notation.
     if (L == 0)
         return "0.";
@@ -573,17 +574,17 @@ std::string ycl_BigFloat::to_string_sci(size_t digits) const{
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Getters
-size_t ycl_BigFloat::get_precision() const{
+size_t BigFloat::get_precision() const{
     //  Returns the precision of the number in words.
     //  Note that each word is 9 decimal digits.
     return L;
 }
-int64_t ycl_BigFloat::get_exponent() const{
+int64_t BigFloat::get_exponent() const{
     //  Returns the exponent of the number in words.
     //  Note that each word is 9 decimal digits.
     return exp;
 }
-uint32_t ycl_BigFloat::word_at(int64_t mag) const{
+uint32_t BigFloat::word_at(int64_t mag) const{
     //  Returns the word at the mag'th digit place.
     //  This is useful for additions where you need to access a specific "digit place"
     //  of the operand without having to worry if it's out-of-bounds.
@@ -597,7 +598,7 @@ uint32_t ycl_BigFloat::word_at(int64_t mag) const{
         return 0;
     return T[(size_t)(mag - exp)];
 }
-int ycl_BigFloat::ucmp(const ycl_BigFloat &x) const{
+int BigFloat::ucmp(const BigFloat &x) const{
     //  Compare function that ignores the sign.
     //  This is needed to determine which direction subtractions will go.
 
@@ -624,17 +625,17 @@ int ycl_BigFloat::ucmp(const ycl_BigFloat &x) const{
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Arithmetic
-void ycl_BigFloat::negate(){
+void BigFloat::negate(){
     //  Negate this number.
     if (L == 0)
         return;
     sign = !sign;
 }
-ycl_BigFloat ycl_BigFloat::mul(uint32_t x) const{
+BigFloat BigFloat::mul(uint32_t x) const{
     //  Multiply by a 32-bit unsigned integer.
 
     //  Compute basic fields.
-    ycl_BigFloat z;
+    BigFloat z;
     z.sign = sign;
     z.exp  = exp;
     z.L    = L;
@@ -655,7 +656,7 @@ ycl_BigFloat ycl_BigFloat::mul(uint32_t x) const{
 
     return z;
 }
-ycl_BigFloat ycl_BigFloat::uadd(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::uadd(const BigFloat &x,size_t p) const{
     //  Perform addition ignoring the sign of the two operands.
 
     //  Magnitude
@@ -682,7 +683,7 @@ ycl_BigFloat ycl_BigFloat::uadd(const ycl_BigFloat &x,size_t p) const{
     }
 
     //  Compute basic fields.
-    ycl_BigFloat z;
+    BigFloat z;
     z.sign  = sign;
     z.exp   = bot;
     z.L     = (uint32_t)TL;
@@ -709,7 +710,7 @@ ycl_BigFloat ycl_BigFloat::uadd(const ycl_BigFloat &x,size_t p) const{
 
     return z;
 }
-ycl_BigFloat ycl_BigFloat::usub(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
     //  Perform subtraction ignoring the sign of the two operands.
 
     //  "this" must be greater than or equal to x. Otherwise, the behavior
@@ -738,7 +739,7 @@ ycl_BigFloat ycl_BigFloat::usub(const ycl_BigFloat &x,size_t p) const{
     }
 
     //  Compute basic fields.
-    ycl_BigFloat z;
+    BigFloat z;
     z.sign  = sign;
     z.exp   = bot;
     z.L     = (uint32_t)TL;
@@ -769,7 +770,7 @@ ycl_BigFloat ycl_BigFloat::usub(const ycl_BigFloat &x,size_t p) const{
 
     return z;
 }
-ycl_BigFloat ycl_BigFloat::add(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
     //  Addition
 
     //  The target precision is p.
@@ -785,11 +786,11 @@ ycl_BigFloat ycl_BigFloat::add(const ycl_BigFloat &x,size_t p) const{
         return usub(x,p);
 
     //  this < x
-    ycl_BigFloat z = x.usub(*this,p);
+    BigFloat z = x.usub(*this,p);
     z.negate();
     return z;
 }
-ycl_BigFloat ycl_BigFloat::sub(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
     //  Subtraction
 
     //  The target precision is p.
@@ -805,11 +806,11 @@ ycl_BigFloat ycl_BigFloat::sub(const ycl_BigFloat &x,size_t p) const{
         return usub(x,p);
 
     //  this < x
-    ycl_BigFloat z = x.usub(*this,p);
+    BigFloat z = x.usub(*this,p);
     z.negate();
     return z;
 }
-ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::mul(const BigFloat &x,size_t p) const{
     //  Multiplication
 
     //  The target precision is p.
@@ -818,7 +819,7 @@ ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
 
     //  Either operand is zero.
     if (L == 0 || x.L == 0)
-        return ycl_BigFloat();
+        return BigFloat();
 
     if (p == 0){
         //  Default value. No trunction.
@@ -851,7 +852,7 @@ ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
     }
 
     //  Compute basic fields.
-    ycl_BigFloat z;
+    BigFloat z;
     z.sign = sign == z.sign;    //  Sign is positive is signs are equal.
     z.exp  = Aexp + Bexp;       //  Add the exponents.
     z.L    = AL + BL;           //  Add the lenghts for now. May need to correct later.
@@ -884,15 +885,15 @@ ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
     auto Tb = std::unique_ptr<complex<double>[]>(new complex<double>[length]);
 
     //  Make sure the twiddle table is big enough.
-    ycl_fft_ensure_table(k);
+    fft_ensure_table(k);
 
-    ycl_int_to_fft(Ta.get(),k,AT,AL);           //  Convert 1st operand
-    ycl_int_to_fft(Tb.get(),k,BT,BL);           //  Convert 2nd operand
-    ycl_fft_forward(Ta.get(),k);                //  Transform 1st operand
-    ycl_fft_forward(Tb.get(),k);                //  Transform 2nd operand
-    ycl_fft_pointwise(Ta.get(),Tb.get(),k);     //  Pointwise multiply
-    ycl_fft_inverse(Ta.get(),k);                //  Perform inverse transform.
-    ycl_fft_to_int(Ta.get(),k,z.T.get(),z.L);   //  Convert back to word array.
+    int_to_fft(Ta.get(),k,AT,AL);           //  Convert 1st operand
+    int_to_fft(Tb.get(),k,BT,BL);           //  Convert 2nd operand
+    fft_forward(Ta.get(),k);                //  Transform 1st operand
+    fft_forward(Tb.get(),k);                //  Transform 2nd operand
+    fft_pointwise(Ta.get(),Tb.get(),k);     //  Pointwise multiply
+    fft_inverse(Ta.get(),k);                //  Perform inverse transform.
+    fft_to_int(Ta.get(),k,z.T.get(),z.L);   //  Convert back to word array.
 
     //  Check top word and correct length.
     if (z.T[z.L - 1] == 0)
@@ -900,7 +901,7 @@ ycl_BigFloat ycl_BigFloat::mul(const ycl_BigFloat &x,size_t p) const{
 
     return z;
 }
-ycl_BigFloat ycl_BigFloat::rcp(size_t p) const{
+BigFloat BigFloat::rcp(size_t p) const{
     //  Compute reciprocal using Newton's Method.
 
     //  r1 = r0 - (r0 * x - 1) * r0
@@ -944,7 +945,7 @@ ycl_BigFloat ycl_BigFloat::rcp(size_t p) const{
         //  Rebuild a BigFloat.
         uint64_t val64 = (uint64_t)val;
 
-        ycl_BigFloat out;
+        BigFloat out;
         out.sign = sign;
 
         out.T = std::unique_ptr<uint32_t[]>(new uint32_t[2]);
@@ -962,16 +963,16 @@ ycl_BigFloat ycl_BigFloat::rcp(size_t p) const{
     if (p == 2) s = 1;
 
     //  Recurse at half the precision
-    ycl_BigFloat T = rcp(s);
+    BigFloat T = rcp(s);
 
     //  r1 = r0 - (r0 * x - 1) * r0
-    return T.sub(this->mul(T,p).sub(ycl_BigFloat(1),p).mul(T,p),p);
+    return T.sub(this->mul(T,p).sub(BigFloat(1),p).mul(T,p),p);
 }
-ycl_BigFloat ycl_BigFloat::div(const ycl_BigFloat &x,size_t p) const{
+BigFloat BigFloat::div(const BigFloat &x,size_t p) const{
     //  Division
     return this->mul(x.rcp(p),p);
 }
-ycl_BigFloat invsqrt(uint32_t x,size_t p){
+BigFloat invsqrt(uint32_t x,size_t p){
     //  Compute inverse square root using Newton's Method.
 
     //            (  r0^2 * x - 1  )
@@ -996,7 +997,7 @@ ycl_BigFloat invsqrt(uint32_t x,size_t p){
         //  Rebuild a BigFloat.
         uint64_t val64 = (uint64_t)val;
 
-        ycl_BigFloat out;
+        BigFloat out;
         out.sign = true;
 
         out.T = std::unique_ptr<uint32_t[]>(new uint32_t[2]);
@@ -1014,11 +1015,11 @@ ycl_BigFloat invsqrt(uint32_t x,size_t p){
     if (p == 2) s = 1;
 
     //  Recurse at half the precision
-    ycl_BigFloat T = invsqrt(x,s);
+    BigFloat T = invsqrt(x,s);
 
-    ycl_BigFloat temp = T.mul(T,p);     //  r0^2
+    BigFloat temp = T.mul(T,p);     //  r0^2
     temp = temp.mul(x);                 //  r0^2 * x
-    temp = temp.sub(ycl_BigFloat(1),p); //  r0^2 * x - 1
+    temp = temp.sub(BigFloat(1),p); //  r0^2 * x - 1
     temp = temp.mul(500000000);         //  (r0^2 * x - 1) / 2
     temp.exp--;
     temp = temp.mul(T,p);               //  (r0^2 * x - 1) / 2 * r0
@@ -1029,14 +1030,14 @@ ycl_BigFloat invsqrt(uint32_t x,size_t p){
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  e
-double ycl_logf_approx(double x){
+double logf_approx(double x){
     //  Returns a very good approximation to log(x!).
     //  log(x!) ~ (x + 1/2) * (log(x) - 1) + (log(2*pi) + 1) / 2
     //  This approximation gets better as x is larger.
     if (x <= 1) return 0;
     return (x + .5) * (log(x) - 1) + (1.4189385332046727417803297364056176398613974736378);
 }
-size_t ycl_e_terms(size_t p){
+size_t e_terms(size_t p){
     //  Returns the # of terms needed to reach a precision of p.
 
     //  The taylor series converges to log(x!) / log(10) decimal digits after
@@ -1052,14 +1053,14 @@ size_t ycl_e_terms(size_t p){
     size_t b = 1;
 
     //  Double up
-    while (ycl_logf_approx((double)b) < sizeL)
+    while (logf_approx((double)b) < sizeL)
         b <<= 1;
 
     //  Binary search
     while (b - a > 1){
         size_t m = (a + b) >> 1;
 
-        if (ycl_logf_approx((double)m) < sizeL)
+        if (logf_approx((double)m) < sizeL)
             a = m;
         else
             b = m;
@@ -1067,65 +1068,65 @@ size_t ycl_e_terms(size_t p){
 
     return b + 2;
 }
-void ycl_e_BSR(ycl_BigFloat &P,ycl_BigFloat &Q,uint32_t a,uint32_t b){
+void e_BSR(BigFloat &P,BigFloat &Q,uint32_t a,uint32_t b){
     //  Binary Splitting recusion for exp(1).
 
     if (b - a == 1){
-        P = ycl_BigFloat(1);
-        Q = ycl_BigFloat(b);
+        P = BigFloat(1);
+        Q = BigFloat(b);
         return;
     }
 
     uint32_t m = (a + b) / 2;
 
-    ycl_BigFloat P0,Q0,P1,Q1;
-    ycl_e_BSR(P0,Q0,a,m);
-    ycl_e_BSR(P1,Q1,m,b);
+    BigFloat P0,Q0,P1,Q1;
+    e_BSR(P0,Q0,a,m);
+    e_BSR(P1,Q1,m,b);
 
     P = P0.mul(Q1).add(P1);
     Q = Q0.mul(Q1);
 }
-ycl_BigFloat ycl_e(size_t digits,bool print = false){
+void e(size_t digits){
     //  The leading 2 doesn't count.
     digits++;
 
     size_t p = (digits + 8) / 9;
-    size_t terms = ycl_e_terms(p);
+    size_t terms = e_terms(p);
 
     //  Limit Exceeded
     if ((uint32_t)terms != terms)
         throw "Limit Exceeded";
 
-    if (print) cout << "Computing e..." << endl;
-    if (print) cout << "Algorithm: Taylor Series of exp(1)" << endl << endl;
+    cout << "Computing e..." << endl;
+    cout << "Algorithm: Taylor Series of exp(1)" << endl << endl;
 
-    double time0 = ycl_wall_clock();
+    double time0 = wall_clock();
 
-    if (print) cout << "Summing Series... " << terms << " terms" << endl;
-    ycl_BigFloat P,Q;
-    ycl_e_BSR(P,Q,0,(uint32_t)terms);
-    double time1 = ycl_wall_clock();
-    if (print) cout << "Time: " << time1 - time0 << endl;
+    cout << "Summing Series... " << terms << " terms" << endl;
+    BigFloat P,Q;
+    e_BSR(P,Q,0,(uint32_t)terms);
+    double time1 = wall_clock();
+    cout << "Time: " << time1 - time0 << endl;
     
-    if (print) cout << "Division... " << endl;
-    P = P.div(Q,p).add(ycl_BigFloat(1),p);
-    double time2 = ycl_wall_clock();
-    if (print) cout << "Time: " << time2 - time1 << endl;
+    cout << "Division... " << endl;
+    P = P.div(Q,p).add(BigFloat(1),p);
+    double time2 = wall_clock();
+    cout << "Time: " << time2 - time1 << endl;
 
-    if (print) cout << "Total Time = " << time2 - time0 << endl << endl;
+    cout << "Total Time = " << time2 - time0 << endl << endl;
 
-    return P;
+    dump_to_file("e.txt",P.to_string(digits));
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  Pi
-void ycl_Pi_BSR(ycl_BigFloat &P,ycl_BigFloat &Q,ycl_BigFloat &R,uint32_t a,uint32_t b,size_t p){
+void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p){
     //  Binary Splitting recursion for the Chudnovsky Formula.
 
     if (b - a == 1){
         //  P = (13591409 + 545140134 b)(2b-1)(6b-5)(6b-1) (-1)^b
-        P = ycl_BigFloat(b).mul(545140134);
-        P = P.add(ycl_BigFloat(13591409));
+        P = BigFloat(b).mul(545140134);
+        P = P.add(BigFloat(13591409));
         P = P.mul(2*b - 1);
         P = P.mul(6*b - 5);
         P = P.mul(6*b - 1);
@@ -1133,11 +1134,11 @@ void ycl_Pi_BSR(ycl_BigFloat &P,ycl_BigFloat &Q,ycl_BigFloat &R,uint32_t a,uint3
             P.negate();
 
         //  Q = 10939058860032000 * b^3
-        Q = ycl_BigFloat(b);
+        Q = BigFloat(b);
         Q = Q.mul(Q).mul(Q).mul(26726400).mul(409297880);
 
         //  R = (2b-1)(6b-5)(6b-1)
-        R = ycl_BigFloat(2*b - 1);
+        R = BigFloat(2*b - 1);
         R = R.mul(6*b - 5);
         R = R.mul(6*b - 1);
 
@@ -1146,15 +1147,15 @@ void ycl_Pi_BSR(ycl_BigFloat &P,ycl_BigFloat &Q,ycl_BigFloat &R,uint32_t a,uint3
 
     uint32_t m = (a + b) / 2;
 
-    ycl_BigFloat P0,Q0,R0,P1,Q1,R1;
-    ycl_Pi_BSR(P0,Q0,R0,a,m,p);
-    ycl_Pi_BSR(P1,Q1,R1,m,b,p);
+    BigFloat P0,Q0,R0,P1,Q1,R1;
+    Pi_BSR(P0,Q0,R0,a,m,p);
+    Pi_BSR(P1,Q1,R1,m,b,p);
 
     P = P0.mul(Q1,p).add(P1.mul(R0,p),p);
     Q = Q0.mul(Q1,p);
     R = R0.mul(R1,p);
 }
-ycl_BigFloat ycl_Pi(size_t digits,bool print = false){
+void Pi(size_t digits){
     //  The leading 3 doesn't count.
     digits++;
 
@@ -1165,50 +1166,49 @@ ycl_BigFloat ycl_Pi(size_t digits,bool print = false){
     if ((uint32_t)terms != terms)
         throw "Limit Exceeded";
 
-    if (print) cout << "Computing Pi..." << endl;
-    if (print) cout << "Algorithm: Chudnovsky Formula" << endl << endl;
+    cout << "Computing Pi..." << endl;
+    cout << "Algorithm: Chudnovsky Formula" << endl << endl;
 
-    double time0 = ycl_wall_clock();
+    double time0 = wall_clock();
 
-    if (print) cout << "Summing Series... " << terms << " terms" << endl;
-    ycl_BigFloat P,Q,R;
-    ycl_Pi_BSR(P,Q,R,0,(uint32_t)terms,p);
-
+    cout << "Summing Series... " << terms << " terms" << endl;
+    BigFloat P,Q,R;
+    Pi_BSR(P,Q,R,0,(uint32_t)terms,p);
     P = Q.mul(13591409).add(P,p);
     Q = Q.mul(4270934400);
-    double time1 = ycl_wall_clock();
-    if (print) cout << "Time: " << time1 - time0 << endl;
+    double time1 = wall_clock();
+    cout << "Time: " << time1 - time0 << endl;
     
-    if (print) cout << "Division... " << endl;
+    cout << "Division... " << endl;
     P = Q.div(P,p);
-    double time2 = ycl_wall_clock();
-    if (print) cout << "Time: " << time2 - time1 << endl;
+    double time2 = wall_clock();
+    cout << "Time: " << time2 - time1 << endl;
     
-    if (print) cout << "InvSqrt... " << endl;
+    cout << "InvSqrt... " << endl;
     Q = invsqrt(10005,p);
-    double time3 = ycl_wall_clock();
-    if (print) cout << "Time: " << time3 - time2 << endl;
+    double time3 = wall_clock();
+    cout << "Time: " << time3 - time2 << endl;
     
-    if (print) cout << "Final Multiply... " << endl;
+    cout << "Final Multiply... " << endl;
     P = P.mul(Q,p);
-    double time4 = ycl_wall_clock();
-    if (print) cout << "Time: " << time4 - time3 << endl;
+    double time4 = wall_clock();
+    cout << "Time: " << time4 - time3 << endl;
 
-    if (print) cout << "Total Time = " << time4 - time0 << endl << endl;
+    cout << "Total Time = " << time4 - time0 << endl << endl;
 
-    return P;
+    dump_to_file("pi.txt",P.to_string(digits));
 }
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+}   //  Namespace: Mini_Pi
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 int main(){
 
     size_t digits = 1000000;
 
-    ycl_dump_to_file("e.txt" ,ycl_e (digits,true).to_string(digits + 1));
-    ycl_dump_to_file("pi.txt",ycl_Pi(digits,true).to_string(digits + 1));
-
-    //  Destroy the twiddle tables.
-    ycl_twiddle_table.clear();
+    Mini_Pi::e (digits);
+    Mini_Pi::Pi(digits);
 
 #ifdef _WIN32
     system("pause");
