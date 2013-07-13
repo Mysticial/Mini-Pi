@@ -149,26 +149,26 @@ void fft_forward(__m128d *T,int k){
     //  Perform FFT reduction into two halves.
     for (size_t c = 0; c < half_length; c++){
         //  Grab Twiddle Factor
-        __m128d r0 = _mm_loaddup_pd((double*)&local_table[c + 0] + 0);
-        __m128d i0 = _mm_loaddup_pd((double*)&local_table[c + 0] + 1);
+        __m128d r0 = _mm_loaddup_pd(&local_table[c].r);
+        __m128d i0 = _mm_loaddup_pd(&local_table[c].i);
 
         //  Grab elements
-        __m128d a0 = T[c + 0];
-        __m128d b0 = T[c + 0 + half_length];
+        __m128d a0 = T[c];
+        __m128d b0 = T[c + half_length];
 
         //  Perform butterfly
         __m128d c0,d0;
         c0 = _mm_add_pd(a0,b0);
         d0 = _mm_sub_pd(a0,b0);
         
-        T[c + 0] = c0;
+        T[c] = c0;
 
         //  Multiply by twiddle factor.
         c0 = _mm_mul_pd(d0,r0);
         d0 = _mm_mul_pd(_mm_shuffle_pd(d0,d0,1),i0);
         c0 = _mm_addsub_pd(c0,d0);
 
-        T[c + 0 + half_length] = c0;
+        T[c + half_length] = c0;
     }
 
     //  Recursively perform FFT on lower elements.
@@ -212,13 +212,13 @@ void fft_inverse(__m128d *T,int k){
     //  Perform FFT reduction into two halves.
     for (size_t c = 0; c < half_length; c++){
         //  Grab Twiddle Factor
-        __m128d r0 = _mm_loaddup_pd((double*)&local_table[c + 0] + 0);
-        __m128d i0 = _mm_loaddup_pd((double*)&local_table[c + 0] + 1);
+        __m128d r0 = _mm_loaddup_pd(&local_table[c].r);
+        __m128d i0 = _mm_loaddup_pd(&local_table[c].i);
         i0 = _mm_xor_pd(i0,_mm_set1_pd(-0.0));
 
         //  Grab elements
-        __m128d a0 = T[c + 0];
-        __m128d b0 = T[c + 0 + half_length];
+        __m128d a0 = T[c];
+        __m128d b0 = T[c + half_length];
 
         //  Perform butterfly
         __m128d c0,d0;
@@ -231,8 +231,8 @@ void fft_inverse(__m128d *T,int k){
         b0 = _mm_add_pd(a0,c0);
         d0 = _mm_sub_pd(a0,c0);
 
-        T[c + 0] = b0;
-        T[c + 0 + half_length] = d0;
+        T[c] = b0;
+        T[c + half_length] = d0;
     }
 }
 void fft_pointwise(__m128d *T,__m128d *A,int k){
