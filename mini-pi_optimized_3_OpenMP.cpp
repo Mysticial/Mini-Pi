@@ -2,7 +2,7 @@
  *
  * Author           : Alexander J. Yee
  * Date Created     : 07/09/2013
- * Last Modified    : 07/13/2013
+ * Last Modified    : 07/16/2013
  * 
  *  This is a miniature program that can compute Pi and e to millions of digits
  *  in quasi-linear runtime.
@@ -1244,7 +1244,7 @@ void Pi(size_t digits,int tds){
     digits++;
 
     size_t p = (digits + 8) / 9;
-    size_t terms = (size_t)(p * 1.5757386069694975172806135197979745404187916988699) + 1;
+    size_t terms = (size_t)(p * 0.6346230241342037371474889163921741077188431452678) + 1;
 
     //  Limit Exceeded
     if ((uint32_t)terms != terms)

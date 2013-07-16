@@ -1,11 +1,44 @@
+Benchmarks
 
-Benchmarks: Pi
+Processor: Intel Core i7 2600k @ 4.2 GHz
+OS       : Windows 7 Ultimate SP1
+Compiler : Visual Studio 2012 - x64 Release
+
+
+Constant : e
+Size     : 1,000,000 digits
+ - mini-pi.cpp:                             9.03352
+ - mini-pi_optimized_1_cached_twiddles.cpp: 3.68721
+ - mini-pi_optimized_2_SSE3.cpp:            1.09606
+ - mini-pi_optimized_3_OpenMP.cpp           0.568033
+ - y-cruncher 0.6.2 (1 thread)              0.151
+ - y-cruncher 0.6.2 (8 threads)             0.080
+
+Constant : Pi
+Size     : 1,000,000 digits
+ - mini-pi.cpp:                             27.7266
+ - mini-pi_optimized_1_cached_twiddles.cpp: 10.9956
+ - mini-pi_optimized_2_SSE3.cpp:            2.94817
+ - mini-pi_optimized_3_OpenMP.cpp           1.56309
+ - y-cruncher 0.6.2 (1 thread)              0.334
+ - y-cruncher 0.6.2 (8 threads)             0.195
+
+
+
+Constant : e
 Size     : 10,000,000 digits
-Hardware : Intel Core i7 2600k @ 4.2 GHz
+ - mini-pi.cpp:                             102.313
+ - mini-pi_optimized_1_cached_twiddles.cpp: 41.1204
+ - mini-pi_optimized_2_SSE3.cpp:            12.4637
+ - mini-pi_optimized_3_OpenMP.cpp           6.36936
+ - y-cruncher 0.6.2 (1 thread)              1.751
+ - y-cruncher 0.6.2 (8 threads)             0.558
 
- - mini-pi.cpp:                             1061.61
- - mini-pi_optimized_1_cached_twiddles.cpp: 415.686
- - mini-pi_optimized_2_SSE3.cpp:            117.147
- - mini-pi_optimized_3_OpenMP.cpp           56.5172
- - y-cruncher v0.6.2 1 thread:              4.905
- - y-cruncher v0.6.2 8 threads:             1.563
+Constant : Pi
+Size     : 10,000,000 digits
+ - mini-pi.cpp:                             358.102
+ - mini-pi_optimized_1_cached_twiddles.cpp: 140.673
+ - mini-pi_optimized_2_SSE3.cpp:            39.3533
+ - mini-pi_optimized_3_OpenMP.cpp           20.4622
+ - y-cruncher 0.6.2 (1 thread)              4.900
+ - y-cruncher 0.6.2 (8 threads)             1.557
