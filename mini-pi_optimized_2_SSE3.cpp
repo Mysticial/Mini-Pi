@@ -638,6 +638,9 @@ void BigFloat::negate(){
 BigFloat BigFloat::mul(uint32_t x) const{
     //  Multiply by a 32-bit unsigned integer.
 
+    if (L == 0 || x == 0)
+        return BigFloat();
+
     //  Compute basic fields.
     BigFloat z;
     z.sign = sign;
