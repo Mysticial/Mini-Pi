@@ -1,8 +1,11 @@
 Benchmarks
 
-Processor: Intel Core i7 2600k @ 4.2 GHz
+Processor: Intel Core i7 2600k @ 4.2 GHz (4 cores, 8 threads)
 OS       : Windows 7 Ultimate SP1
 Compiler : Visual Studio 2012 - x64 Release
+
+
+All times in seconds.
 
 
 Constant : e
@@ -42,3 +45,23 @@ Size     : 10,000,000 digits
  - mini-pi_optimized_3_OpenMP.cpp           20.4622
  - y-cruncher 0.6.2 (1 thread)              4.900
  - y-cruncher 0.6.2 (8 threads)             1.557
+
+
+
+Constant : e
+Size     : 100,000,000 digits
+ - mini-pi.cpp:                             1498.3
+ - mini-pi_optimized_1_cached_twiddles.cpp: 594.466
+ - mini-pi_optimized_2_SSE3.cpp:            180.014
+ - mini-pi_optimized_3_OpenMP.cpp           96.0125
+ - y-cruncher 0.6.2 (1 thread)              25.011
+ - y-cruncher 0.6.2 (8 threads)             6.400
+
+Constant : Pi
+Size     : 100,000,000 digits
+ - mini-pi.cpp:                             5899.53
+ - mini-pi_optimized_1_cached_twiddles.cpp: 2311.59
+ - mini-pi_optimized_2_SSE3.cpp:            674.642
+ - mini-pi_optimized_3_OpenMP.cpp           381.771
+ - y-cruncher 0.6.2 (1 thread)              78.617
+ - y-cruncher 0.6.2 (8 threads)             20.703
