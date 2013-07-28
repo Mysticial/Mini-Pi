@@ -45,7 +45,7 @@ For what it's worth, here's a short list of optimizations to try out:
  - Implement the Basecase and Karatsuba algorithms to better handle small multiplications.
  - Small number optimization to reduce heap allocation calls.
  - Binary Splitting always splits the series in half. But half isn't optimal.
- - Micro-optmizations such as manual loop-unrolling.
+ - Micro-optimizations such as manual loop-unrolling.
 
 
 Files:
