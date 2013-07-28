@@ -502,7 +502,7 @@ std::string BigFloat::to_string(size_t digits) const{
 
     int64_t mag = exp + L;
 
-    //  Use scientific notation of out of range.
+    //  Use scientific notation if out of range.
     if (mag > 1 || mag < 0)
         return to_string_sci();
 
@@ -1020,9 +1020,9 @@ BigFloat invsqrt(uint32_t x,size_t p){
     //  Recurse at half the precision
     BigFloat T = invsqrt(x,s);
 
-    BigFloat temp = T.mul(T,p);     //  r0^2
+    BigFloat temp = T.mul(T,p);         //  r0^2
     temp = temp.mul(x);                 //  r0^2 * x
-    temp = temp.sub(BigFloat(1),p); //  r0^2 * x - 1
+    temp = temp.sub(BigFloat(1),p);     //  r0^2 * x - 1
     temp = temp.mul(500000000);         //  (r0^2 * x - 1) / 2
     temp.exp--;
     temp = temp.mul(T,p);               //  (r0^2 * x - 1) / 2 * r0
