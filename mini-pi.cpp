@@ -809,7 +809,7 @@ BigFloat BigFloat::mul(const BigFloat &x,size_t p) const{
 
     //  Compute basic fields.
     BigFloat z;
-    z.sign = sign == z.sign;    //  Sign is positive is signs are equal.
+    z.sign = sign == z.sign;    //  Sign is positive if signs are equal.
     z.exp  = Aexp + Bexp;       //  Add the exponents.
     z.L    = AL + BL;           //  Add the lenghts for now. May need to correct later.
 
@@ -1022,7 +1022,7 @@ size_t e_terms(size_t p){
     return b + 2;
 }
 void e_BSR(BigFloat &P,BigFloat &Q,uint32_t a,uint32_t b){
-    //  Binary Splitting recusion for exp(1).
+    //  Binary Splitting recursion for exp(1).
 
     if (b - a == 1){
         P = BigFloat(1);
