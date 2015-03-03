@@ -943,7 +943,7 @@ BigFloat BigFloat::mul(const BigFloat &x,size_t p,int tds) const{
     fft_forward(Ta.get(),k,tds);            //  Transform 1st operand
     fft_forward(Tb.get(),k,tds);            //  Transform 2nd operand
     fft_pointwise(Ta.get(),Tb.get(),k);     //  Pointwise multiply
-    fft_inverse(Ta.get(),k);                //  Perform inverse transform.
+    fft_inverse(Ta.get(),k,tds);            //  Perform inverse transform.
     fft_to_int(Ta.get(),k,z.T.get(),z.L);   //  Convert back to word array.
 
     //  Check top word and correct length.
