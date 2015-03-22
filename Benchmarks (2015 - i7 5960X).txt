@@ -1,0 +1,68 @@
+Benchmarks
+
+Processor: Intel Core i7 5960X @ 4.0 GHz (8 cores, 16 threads)
+OS       : Windows 7 Ultimate SP1
+Compiler : Visual Studio 2013 - x64 Release /arch:AVX
+
+
+All times in seconds.
+Benchmarks for y-cruncher are included to give an overall idea of where Mini-Pi stands.
+
+
+Constant : e
+Size     : 1,000,000 digits
+ - mini-pi.cpp:                             6.08135
+ - mini-pi_optimized_1_cached_twiddles.cpp: 1.30907  <-- Auto-vectorization makes this almost
+ - mini-pi_optimized_2_SSE3.cpp:            1.06806      as fast as the manual SSE3 version!
+ - mini-pi_optimized_3_OpenMP.cpp           0.653037
+ - y-cruncher v0.6.8 (sequential)           0.126
+ - y-cruncher v0.6.8 (parallel)             0.084
+
+Constant : Pi
+Size     : 1,000,000 digits
+ - mini-pi.cpp:                             18.166
+ - mini-pi_optimized_1_cached_twiddles.cpp: 3.19418
+ - mini-pi_optimized_2_SSE3.cpp:            2.54015
+ - mini-pi_optimized_3_OpenMP.cpp           1.44208
+ - y-cruncher v0.6.8 (sequential)           0.264
+ - y-cruncher v0.6.8 (parallel)             0.197
+
+
+
+Constant : e
+Size     : 10,000,000 digits
+ - mini-pi.cpp:                             66.5988
+ - mini-pi_optimized_1_cached_twiddles.cpp: 12.6737
+ - mini-pi_optimized_2_SSE3.cpp:            10.3766
+ - mini-pi_optimized_3_OpenMP.cpp           3.16418
+ - y-cruncher v0.6.8 (sequential)           1.075
+ - y-cruncher v0.6.8 (parallel)             0.251
+
+Constant : Pi
+Size     : 10,000,000 digits
+ - mini-pi.cpp:                             231.864
+ - mini-pi_optimized_1_cached_twiddles.cpp: 41.0493
+ - mini-pi_optimized_2_SSE3.cpp:            32.8839
+ - mini-pi_optimized_3_OpenMP.cpp           9.99857
+ - y-cruncher v0.6.8 (sequential)           2.858
+ - y-cruncher v0.6.8 (parallel)             0.627
+
+
+
+Constant : e
+Size     : 100,000,000 digits
+ - mini-pi.cpp:                             963.662
+ - mini-pi_optimized_1_cached_twiddles.cpp: 177.405
+ - mini-pi_optimized_2_SSE3.cpp:            144.891
+ - mini-pi_optimized_3_OpenMP.cpp           35.731
+ - y-cruncher v0.6.8 (sequential)           12.872
+ - y-cruncher v0.6.8 (parallel)             1.845
+
+Constant : Pi
+Size     : 100,000,000 digits
+ - mini-pi.cpp:                             3777.91
+ - mini-pi_optimized_1_cached_twiddles.cpp: 667.652
+ - mini-pi_optimized_2_SSE3.cpp:            540.887
+ - mini-pi_optimized_3_OpenMP.cpp           128.566
+ - y-cruncher v0.6.8 (sequential)           42.624
+ - y-cruncher v0.6.8 (parallel)             5.294

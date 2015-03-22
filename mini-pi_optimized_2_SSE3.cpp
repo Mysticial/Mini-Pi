@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <memory>
 #include <iostream>
 using std::cout;
@@ -160,7 +161,7 @@ void fft_forward(__m128d *T,int k){
         __m128d c0,d0;
         c0 = _mm_add_pd(a0,b0);
         d0 = _mm_sub_pd(a0,b0);
-        
+
         T[c] = c0;
 
         //  Multiply by twiddle factor.
@@ -1115,7 +1116,7 @@ void e(size_t digits){
     e_BSR(P,Q,0,(uint32_t)terms);
     double time1 = wall_clock();
     cout << "Time: " << time1 - time0 << endl;
-    
+
     cout << "Division... " << endl;
     P = P.div(Q,p).add(BigFloat(1),p);
     double time2 = wall_clock();
@@ -1186,17 +1187,17 @@ void Pi(size_t digits){
     Q = Q.mul(4270934400);
     double time1 = wall_clock();
     cout << "Time: " << time1 - time0 << endl;
-    
+
     cout << "Division... " << endl;
     P = Q.div(P,p);
     double time2 = wall_clock();
     cout << "Time: " << time2 - time1 << endl;
-    
+
     cout << "InvSqrt... " << endl;
     Q = invsqrt(10005,p);
     double time3 = wall_clock();
     cout << "Time: " << time3 - time2 << endl;
-    
+
     cout << "Final Multiply... " << endl;
     P = P.mul(Q,p);
     double time4 = wall_clock();
