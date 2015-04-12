@@ -743,9 +743,7 @@ BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
         return usub(x,p);
 
     //  this < x
-    BigFloat z = x.usub(*this,p);
-    z.negate();
-    return z;
+    return x.usub(*this,p);
 }
 BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
     //  Subtraction
