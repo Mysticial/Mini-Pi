@@ -43,14 +43,14 @@ void fft_ensure_table(int k){
     for (size_t c = 0; c < length; c++){
         //  Generate Twiddle Factor
         double angle = omega * c;
-        auto twiddle_factor = complex<double>(cos(angle),sin(angle));
+        auto twiddle_factor = complex<double>(cos(angle), sin(angle));
         sub_table.push_back(twiddle_factor);
     }
 
     //  Push into main table.
     twiddle_table.push_back(std::move(sub_table));
 }
-void fft_forward(complex<double> *T,int k){
+void fft_forward(complex<double> *T, int k){
     //  Fast Fourier Transform
     //  This function performs a forward FFT of length 2^k.
 
@@ -91,12 +91,12 @@ void fft_forward(complex<double> *T,int k){
     }
 
     //  Recursively perform FFT on lower elements.
-    fft_forward(T,k - 1);
+    fft_forward(T, k - 1);
 
     //  Recursively perform FFT on upper elements.
-    fft_forward(T + half_length,k - 1);
+    fft_forward(T + half_length, k - 1);
 }
-void fft_inverse(complex<double> *T,int k){
+void fft_inverse(complex<double> *T, int k){
     //  Fast Fourier Transform
     //  This function performs an inverse FFT of length 2^k.
 
@@ -120,10 +120,10 @@ void fft_inverse(complex<double> *T,int k){
     size_t half_length = length / 2;
 
     //  Recursively perform FFT on lower elements.
-    fft_inverse(T,k - 1);
+    fft_inverse(T, k - 1);
 
     //  Recursively perform FFT on upper elements.
-    fft_inverse(T + half_length,k - 1);
+    fft_inverse(T + half_length, k - 1);
 
     //  Get local twiddle table.
     std::vector<complex<double>> &local_table = twiddle_table[k];
@@ -142,7 +142,7 @@ void fft_inverse(complex<double> *T,int k){
         T[c + half_length]  = a - b;
     }
 }
-void fft_pointwise(complex<double> *T,const complex<double> *A,int k){
+void fft_pointwise(complex<double> *T, const complex<double> *A, int k){
     //  Performs pointwise multiplications of two FFT arrays.
 
     //Parameters:
@@ -154,7 +154,7 @@ void fft_pointwise(complex<double> *T,const complex<double> *A,int k){
         T[c] = T[c] * A[c];
     }
 }
-void int_to_fft(complex<double> *T,int k,const uint32_t *A,size_t AL){
+void int_to_fft(complex<double> *T, int k, const uint32_t *A, size_t AL){
     //  Convert word array into FFT array. Put 3 decimal digits per complex point.
 
     //Parameters:
@@ -185,9 +185,9 @@ void int_to_fft(complex<double> *T,int k,const uint32_t *A,size_t AL){
 
     //  Pad the rest with zeros.
     while (T < Tstop)
-        *T++ = complex<double>(0,0);
+        *T++ = complex<double>(0, 0);
 }
-void fft_to_int(const complex<double> *T,int k,uint32_t *A,size_t AL){
+void fft_to_int(const complex<double> *T, int k, uint32_t *A, size_t AL){
     //  Convert FFT array back to word array. Perform rounding and carryout.
 
     //Parameters:
@@ -244,7 +244,7 @@ void ensure_FFT_tables(size_t CL){
     }
     fft_ensure_table(k);
 }
-void multiply_FFT(uint32_t* C,const uint32_t* A,size_t AL,const uint32_t* B,size_t BL){
+void multiply_FFT(uint32_t* C, const uint32_t* A, size_t AL, const uint32_t* B, size_t BL){
     size_t CL = AL + BL;
 
     //  Determine minimum FFT size.
@@ -265,17 +265,17 @@ void multiply_FFT(uint32_t* C,const uint32_t* A,size_t AL,const uint32_t* B,size
     //  3 digits per point is small enough to not encounter round-off error
     //  until a transform size of 2^30.
     //  A transform length of 2^29 allows for the maximum product size to be
-    //  2^29 * 3 = 1,610,612,736 decimal digits.
+    //  2^29 * 3 = 1, 610, 612, 736 decimal digits.
     if (k > 29)
         throw "FFT size limit exceeded.";
 
-    int_to_fft(Ta.get(),k,A,AL);        //  Convert 1st operand
-    int_to_fft(Tb.get(),k,B,BL);        //  Convert 2nd operand
-    fft_forward(Ta.get(),k);            //  Transform 1st operand
-    fft_forward(Tb.get(),k);            //  Transform 2nd operand
-    fft_pointwise(Ta.get(),Tb.get(),k); //  Pointwise multiply
-    fft_inverse(Ta.get(),k);            //  Perform inverse transform.
-    fft_to_int(Ta.get(),k,C,CL);        //  Convert back to word array.
+    int_to_fft(Ta.get(), k, A, AL);        //  Convert 1st operand
+    int_to_fft(Tb.get(), k, B, BL);        //  Convert 2nd operand
+    fft_forward(Ta.get(), k);            //  Transform 1st operand
+    fft_forward(Tb.get(), k);            //  Transform 2nd operand
+    fft_pointwise(Ta.get(), Tb.get(), k); //  Pointwise multiply
+    fft_inverse(Ta.get(), k);            //  Perform inverse transform.
+    fft_to_int(Ta.get(), k, C, CL);        //  Convert back to word array.
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

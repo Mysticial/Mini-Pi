@@ -24,9 +24,9 @@ uint32_t rand_word(){
 complex<double> rand_complex(){
     double r = (double)(rand() % 1000);
     double i = (double)(rand() % 1000);
-    return complex<double>(r,i);
+    return complex<double>(r, i);
 }
-void print_fft(complex<double> *T,int k){
+void print_fft(complex<double> *T, int k){
     int length = 1 << k;
     for (int c = 0; c < length; c++){
         std::cout << T[c].real() << " + " << T[c].imag() << "i" << " , ";
@@ -41,7 +41,7 @@ void print_word(uint32_t word){
     }
     std::cout << str;
 }
-void print_words(uint32_t *T,size_t L){
+void print_words(uint32_t *T, size_t L){
     while (L-- > 0){
         print_word(T[L]);
     }

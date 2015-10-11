@@ -22,7 +22,7 @@ namespace Mini_Pi{
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p){
+void Pi_BSR(BigFloat &P, BigFloat &Q, BigFloat &R, uint32_t a, uint32_t b, size_t p){
     //  Binary Splitting recursion for the Chudnovsky Formula.
 
     if (b - a == 1){
@@ -49,13 +49,13 @@ void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p){
 
     uint32_t m = (a + b) / 2;
 
-    BigFloat P0,Q0,R0,P1,Q1,R1;
-    Pi_BSR(P0,Q0,R0,a,m,p);
-    Pi_BSR(P1,Q1,R1,m,b,p);
+    BigFloat P0, Q0, R0, P1, Q1, R1;
+    Pi_BSR(P0, Q0, R0, a, m, p);
+    Pi_BSR(P1, Q1, R1, m, b, p);
 
-    P = P0.mul(Q1,p).add(P1.mul(R0,p),p);
-    Q = Q0.mul(Q1,p);
-    R = R0.mul(R1,p);
+    P = P0.mul(Q1, p).add(P1.mul(R0, p), p);
+    Q = Q0.mul(Q1, p);
+    R = R0.mul(R1, p);
 }
 void Pi(size_t digits){
     //  The leading 3 doesn't count.
@@ -76,31 +76,31 @@ void Pi(size_t digits){
     double time0 = wall_clock();
 
     cout << "Summing Series... " << terms << " terms" << endl;
-    BigFloat P,Q,R;
-    Pi_BSR(P,Q,R,0,(uint32_t)terms,p);
-    P = Q.mul(13591409).add(P,p);
+    BigFloat P, Q, R;
+    Pi_BSR(P, Q, R, 0, (uint32_t)terms, p);
+    P = Q.mul(13591409).add(P, p);
     Q = Q.mul(4270934400);
     double time1 = wall_clock();
     cout << "Time: " << time1 - time0 << endl;
 
     cout << "Division... " << endl;
-    P = Q.div(P,p);
+    P = Q.div(P, p);
     double time2 = wall_clock();
     cout << "Time: " << time2 - time1 << endl;
 
     cout << "InvSqrt... " << endl;
-    Q = invsqrt(10005,p);
+    Q = invsqrt(10005, p);
     double time3 = wall_clock();
     cout << "Time: " << time3 - time2 << endl;
 
     cout << "Final Multiply... " << endl;
-    P = P.mul(Q,p);
+    P = P.mul(Q, p);
     double time4 = wall_clock();
     cout << "Time: " << time4 - time3 << endl;
 
     cout << "Total Time = " << time4 - time0 << endl << endl;
 
-    dump_to_file("pi.txt",P.to_string(digits));
+    dump_to_file("pi.txt", P.to_string(digits));
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

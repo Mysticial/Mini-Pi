@@ -48,7 +48,7 @@ BigFloat::BigFloat()
     , exp(0)
     , L(0)
 {}
-BigFloat::BigFloat(uint32_t x,bool sign_)
+BigFloat::BigFloat(uint32_t x, bool sign_)
     : sign(true)
     , exp(0)
     , L(1)
@@ -66,7 +66,7 @@ BigFloat::BigFloat(uint32_t x,bool sign_)
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  String Conversion
-int64_t BigFloat::to_string_trimmed(size_t digits,std::string &str) const{
+int64_t BigFloat::to_string_trimmed(size_t digits, std::string &str) const{
     //  Converts this object to a string with "digits" significant figures.
 
     //  After calling this function, the following expression is equal to the
@@ -138,7 +138,7 @@ std::string BigFloat::to_string(size_t digits) const{
 
     //  Convert
     std::string str;
-    int64_t exponent = to_string_trimmed(digits,str);
+    int64_t exponent = to_string_trimmed(digits, str);
 
     //  Less than 1
     if (mag == 0){
@@ -161,7 +161,7 @@ std::string BigFloat::to_string(size_t digits) const{
     }
 
     //  Get digits after the decimal place.
-    std::string after_decimal = str.substr((size_t)(str.size() + exponent),(size_t)-exponent);
+    std::string after_decimal = str.substr((size_t)(str.size() + exponent), (size_t)-exponent);
 
     if (sign){
         return before_decimal + "." + after_decimal;
@@ -176,7 +176,7 @@ std::string BigFloat::to_string_sci(size_t digits) const{
 
     //  Convert
     std::string str;
-    int64_t exponent = to_string_trimmed(digits,str);
+    int64_t exponent = to_string_trimmed(digits, str);
 
     //  Strip leading zeros.
     {
@@ -188,7 +188,7 @@ std::string BigFloat::to_string_sci(size_t digits) const{
 
     //  Insert decimal place
     exponent += str.size() - 1;
-    str = str.substr(0,1) + "." + &str[1];
+    str = str.substr(0, 1) + "." + &str[1];
 
     //  Add exponent
     if (exponent != 0){
@@ -289,14 +289,14 @@ BigFloat BigFloat::mul(uint32_t x) const{
 
     return z;
 }
-BigFloat BigFloat::uadd(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::uadd(const BigFloat &x, size_t p) const{
     //  Perform addition ignoring the sign of the two operands.
 
     //  Magnitude
     int64_t magA = exp + L;
     int64_t magB = x.exp + x.L;
-    int64_t top = std::max(magA,magB);
-    int64_t bot = std::min(exp,x.exp);
+    int64_t top = std::max(magA, magB);
+    int64_t bot = std::min(exp, x.exp);
 
     //  Target length
     int64_t TL = top - bot;
@@ -343,7 +343,7 @@ BigFloat BigFloat::uadd(const BigFloat &x,size_t p) const{
 
     return z;
 }
-BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::usub(const BigFloat &x, size_t p) const{
     //  Perform subtraction ignoring the sign of the two operands.
 
     //  "this" must be greater than or equal to x. Otherwise, the behavior
@@ -352,8 +352,8 @@ BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
     //  Magnitude
     int64_t magA = exp + L;
     int64_t magB = x.exp + x.L;
-    int64_t top = std::max(magA,magB);
-    int64_t bot = std::min(exp,x.exp);
+    int64_t top = std::max(magA, magB);
+    int64_t bot = std::min(exp, x.exp);
 
     //  Truncate precision
     int64_t TL = top - bot;
@@ -403,7 +403,7 @@ BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
 
     return z;
 }
-BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::add(const BigFloat &x, size_t p) const{
     //  Addition
 
     //  The target precision is p.
@@ -412,16 +412,16 @@ BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
 
     //  Same sign. Add.
     if (sign == x.sign)
-        return uadd(x,p);
+        return uadd(x, p);
 
     //  this > x
     if (ucmp(x) > 0)
-        return usub(x,p);
+        return usub(x, p);
 
     //  this < x
-    return x.usub(*this,p);
+    return x.usub(*this, p);
 }
-BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::sub(const BigFloat &x, size_t p) const{
     //  Subtraction
 
     //  The target precision is p.
@@ -430,18 +430,18 @@ BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
 
     //  Different sign. Add.
     if (sign != x.sign)
-        return uadd(x,p);
+        return uadd(x, p);
 
     //  this > x
     if (ucmp(x) > 0)
-        return usub(x,p);
+        return usub(x, p);
 
     //  this < x
-    BigFloat z = x.usub(*this,p);
+    BigFloat z = x.usub(*this, p);
     z.negate();
     return z;
 }
-BigFloat BigFloat::mul(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::mul(const BigFloat &x, size_t p) const{
     //  Multiplication
 
     //  The target precision is p.
@@ -492,7 +492,7 @@ BigFloat BigFloat::mul(const BigFloat &x,size_t p) const{
     z.T = std::unique_ptr<uint32_t[]>(new uint32_t[z.L]);
 
     //  Perform multiplication using FFT.
-    multiply_FFT(z.T.get(),AT,AL,BT,BL);
+    multiply_FFT(z.T.get(), AT, AL, BT, BL);
 
     //  Check top word and correct length.
     if (z.T[z.L - 1] == 0)
@@ -565,13 +565,13 @@ BigFloat BigFloat::rcp(size_t p) const{
     BigFloat T = rcp(s);
 
     //  r1 = r0 - (r0 * x - 1) * r0
-    return T.sub(this->mul(T,p).sub(BigFloat(1),p).mul(T,p),p);
+    return T.sub(this->mul(T, p).sub(BigFloat(1), p).mul(T, p), p);
 }
-BigFloat BigFloat::div(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::div(const BigFloat &x, size_t p) const{
     //  Division
-    return this->mul(x.rcp(p),p);
+    return this->mul(x.rcp(p), p);
 }
-BigFloat invsqrt(uint32_t x,size_t p){
+BigFloat invsqrt(uint32_t x, size_t p){
     //  Compute inverse square root using Newton's Method.
 
     //            (  r0^2 * x - 1  )
@@ -614,15 +614,15 @@ BigFloat invsqrt(uint32_t x,size_t p){
     if (p == 2) s = 1;
 
     //  Recurse at half the precision
-    BigFloat T = invsqrt(x,s);
+    BigFloat T = invsqrt(x, s);
 
-    BigFloat temp = T.mul(T,p);         //  r0^2
+    BigFloat temp = T.mul(T, p);         //  r0^2
     temp = temp.mul(x);                 //  r0^2 * x
-    temp = temp.sub(BigFloat(1),p);     //  r0^2 * x - 1
+    temp = temp.sub(BigFloat(1), p);     //  r0^2 * x - 1
     temp = temp.mul(500000000);         //  (r0^2 * x - 1) / 2
     temp.exp--;
-    temp = temp.mul(T,p);               //  (r0^2 * x - 1) / 2 * r0
-    return T.sub(temp,p);               //  r0 - (r0^2 * x - 1) / 2 * r0
+    temp = temp.mul(T, p);               //  (r0^2 * x - 1) / 2 * r0
+    return T.sub(temp, p);               //  r0 - (r0^2 * x - 1) / 2 * r0
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

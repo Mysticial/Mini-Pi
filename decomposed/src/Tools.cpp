@@ -36,14 +36,14 @@ double wall_clock(){
     return (double)clock() / CLOCKS_PER_SEC;
 #endif
 }
-void dump_to_file(const char *path,const std::string &str){
+void dump_to_file(const char *path, const std::string &str){
     //  Dump a string to a file.
 
-    FILE *file = fopen(path,"wb");
+    FILE *file = fopen(path, "wb");
     if (file == NULL)
         throw "Cannot Create File";
 
-    fwrite(str.c_str(),1,str.size(),file);
+    fwrite(str.c_str(), 1, str.size(), file);
     fclose(file);
 }
 ////////////////////////////////////////////////////////////////////////////////

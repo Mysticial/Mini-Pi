@@ -68,14 +68,14 @@ double wall_clock(){
     return (double)clock() / CLOCKS_PER_SEC;
 #endif
 }
-void dump_to_file(const char *path,const std::string &str){
+void dump_to_file(const char *path, const std::string &str){
     //  Dump a string to a file.
 
-    FILE *file = fopen(path,"wb");
+    FILE *file = fopen(path, "wb");
     if (file == NULL)
         throw "Cannot Create File";
 
-    fwrite(str.c_str(),1,str.size(),file);
+    fwrite(str.c_str(), 1, str.size(), file);
     fclose(file);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ struct SIMD_delete{
 struct my_complex{
     double r;
     double i;
-    my_complex(double _r,double _i) : r(_r), i(_i) {};
+    my_complex(double _r, double _i) : r(_r), i(_i) {};
 };
 std::vector<std::vector<my_complex>> twiddle_table;
 void fft_ensure_table(int k){
@@ -118,14 +118,14 @@ void fft_ensure_table(int k){
     for (size_t c = 0; c < length; c++){
         //  Generate Twiddle Factor
         double angle = omega * c;
-        auto twiddle_factor = my_complex(cos(angle),sin(angle));
+        auto twiddle_factor = my_complex(cos(angle), sin(angle));
         sub_table.push_back(twiddle_factor);
     }
 
     //  Push into main table.
     twiddle_table.push_back(std::move(sub_table));
 }
-void fft_forward(__m128d *T,int k,int tds = 1){
+void fft_forward(__m128d *T, int k, int tds = 1){
     //  Fast Fourier Transform
     //  This function performs a forward FFT of length 2^k.
 
@@ -140,8 +140,8 @@ void fft_forward(__m128d *T,int k,int tds = 1){
     if (k == 1){
         __m128d a = T[0];
         __m128d b = T[1];
-        T[0] = _mm_add_pd(a,b);
-        T[1] = _mm_sub_pd(a,b);
+        T[0] = _mm_add_pd(a, b);
+        T[1] = _mm_sub_pd(a, b);
         return;
     }
 
@@ -167,24 +167,24 @@ void fft_forward(__m128d *T,int k,int tds = 1){
         __m128d b0 = T[c + half_length];
 
         //  Perform butterfly
-        __m128d c0,d0;
-        c0 = _mm_add_pd(a0,b0);
-        d0 = _mm_sub_pd(a0,b0);
+        __m128d c0, d0;
+        c0 = _mm_add_pd(a0, b0);
+        d0 = _mm_sub_pd(a0, b0);
 
         T[c] = c0;
 
         //  Multiply by twiddle factor.
-        c0 = _mm_mul_pd(d0,r0);
-        d0 = _mm_mul_pd(_mm_shuffle_pd(d0,d0,1),i0);
-        c0 = _mm_addsub_pd(c0,d0);
+        c0 = _mm_mul_pd(d0, r0);
+        d0 = _mm_mul_pd(_mm_shuffle_pd(d0, d0, 1), i0);
+        c0 = _mm_addsub_pd(c0, d0);
 
         T[c + half_length] = c0;
     }
 
     if (tds < 2){
         //  No more threads.
-        fft_forward(T,k - 1);
-        fft_forward(T + half_length,k - 1);
+        fft_forward(T, k - 1);
+        fft_forward(T + half_length, k - 1);
     }else{
         //  Run sub-recursions in parallel.
         int tds0 = tds / 2;
@@ -193,15 +193,15 @@ void fft_forward(__m128d *T,int k,int tds = 1){
         {
             int tid = omp_get_thread_num();
             if (tid == 0){
-                fft_forward(T,k - 1,tds0);
+                fft_forward(T, k - 1, tds0);
             }
             if (tid != 0 || omp_get_num_threads() < 2){
-                fft_forward(T + half_length,k - 1,tds1);
+                fft_forward(T + half_length, k - 1, tds1);
             }
         }
     }
 }
-void fft_inverse(__m128d *T,int k,int tds = 1){
+void fft_inverse(__m128d *T, int k, int tds = 1){
     //  Fast Fourier Transform
     //  This function performs an inverse FFT of length 2^k.
 
@@ -216,8 +216,8 @@ void fft_inverse(__m128d *T,int k,int tds = 1){
     if (k == 1){
         __m128d a = T[0];
         __m128d b = T[1];
-        T[0] = _mm_add_pd(a,b);
-        T[1] = _mm_sub_pd(a,b);
+        T[0] = _mm_add_pd(a, b);
+        T[1] = _mm_sub_pd(a, b);
         return;
     }
 
@@ -230,8 +230,8 @@ void fft_inverse(__m128d *T,int k,int tds = 1){
 
     if (tds < 2){
         //  No more threads.
-        fft_inverse(T,k - 1);
-        fft_inverse(T + half_length,k - 1);
+        fft_inverse(T, k - 1);
+        fft_inverse(T + half_length, k - 1);
     }else{
         //  Run sub-recursions in parallel.
         int tds0 = tds / 2;
@@ -240,10 +240,10 @@ void fft_inverse(__m128d *T,int k,int tds = 1){
         {
             int tid = omp_get_thread_num();
             if (tid == 0){
-                fft_inverse(T,k - 1,tds0);
+                fft_inverse(T, k - 1, tds0);
             }
             if (tid != 0 || omp_get_num_threads() < 2){
-                fft_inverse(T + half_length,k - 1,tds1);
+                fft_inverse(T + half_length, k - 1, tds1);
             }
         }
     }
@@ -257,28 +257,28 @@ void fft_inverse(__m128d *T,int k,int tds = 1){
         //  Grab Twiddle Factor
         __m128d r0 = _mm_loaddup_pd(&local_table[c].r);
         __m128d i0 = _mm_loaddup_pd(&local_table[c].i);
-        i0 = _mm_xor_pd(i0,_mm_set1_pd(-0.0));
+        i0 = _mm_xor_pd(i0, _mm_set1_pd(-0.0));
 
         //  Grab elements
         __m128d a0 = T[c];
         __m128d b0 = T[c + half_length];
 
         //  Perform butterfly
-        __m128d c0,d0;
+        __m128d c0, d0;
 
         //  Multiply by twiddle factor.
-        c0 = _mm_mul_pd(b0,r0);
-        d0 = _mm_mul_pd(_mm_shuffle_pd(b0,b0,1),i0);
-        c0 = _mm_addsub_pd(c0,d0);
+        c0 = _mm_mul_pd(b0, r0);
+        d0 = _mm_mul_pd(_mm_shuffle_pd(b0, b0, 1), i0);
+        c0 = _mm_addsub_pd(c0, d0);
 
-        b0 = _mm_add_pd(a0,c0);
-        d0 = _mm_sub_pd(a0,c0);
+        b0 = _mm_add_pd(a0, c0);
+        d0 = _mm_sub_pd(a0, c0);
 
         T[c] = b0;
         T[c + half_length] = d0;
     }
 }
-void fft_pointwise(__m128d *T,__m128d *A,int k){
+void fft_pointwise(__m128d *T, __m128d *A, int k){
     //  Performs pointwise multiplications of two FFT arrays.
 
     //Parameters:
@@ -289,13 +289,13 @@ void fft_pointwise(__m128d *T,__m128d *A,int k){
     for (size_t c = 0; c < length; c++){
         __m128d a0 = T[c];
         __m128d b0 = A[c];
-        __m128d c0,d0;
-        c0 = _mm_mul_pd(a0,_mm_unpacklo_pd(b0,b0));
-        d0 = _mm_mul_pd(_mm_shuffle_pd(a0,a0,1),_mm_unpackhi_pd(b0,b0));
-        T[c] = _mm_addsub_pd(c0,d0);
+        __m128d c0, d0;
+        c0 = _mm_mul_pd(a0, _mm_unpacklo_pd(b0, b0));
+        d0 = _mm_mul_pd(_mm_shuffle_pd(a0, a0, 1), _mm_unpackhi_pd(b0, b0));
+        T[c] = _mm_addsub_pd(c0, d0);
     }
 }
-void int_to_fft(__m128d *T,int k,const uint32_t *A,size_t AL){
+void int_to_fft(__m128d *T, int k, const uint32_t *A, size_t AL){
     //  Convert word array into FFT array. Put 3 decimal digits per complex point.
 
     //Parameters:
@@ -328,7 +328,7 @@ void int_to_fft(__m128d *T,int k,const uint32_t *A,size_t AL){
     while (T < Tstop)
         *T++ = _mm_setzero_pd();
 }
-void fft_to_int(__m128d *T,int k,uint32_t *A,size_t AL){
+void fft_to_int(__m128d *T, int k, uint32_t *A, size_t AL){
     //  Convert FFT array back to word array. Perform rounding and carryout.
 
     //Parameters:
@@ -403,7 +403,7 @@ public:
     BigFloat& operator=(BigFloat &&x);
 
     BigFloat();
-    BigFloat(uint32_t x,bool sign = true);
+    BigFloat(uint32_t x, bool sign = true);
 
     std::string to_string    (size_t digits = 0) const;
     std::string to_string_sci(size_t digits = 0) const;
@@ -413,11 +413,11 @@ public:
 
     void negate();
     BigFloat mul(uint32_t x) const;
-    BigFloat add(const BigFloat &x,size_t p = 0) const;
-    BigFloat sub(const BigFloat &x,size_t p = 0) const;
-    BigFloat mul(const BigFloat &x,size_t p = 0,int threads = 0) const;
-    BigFloat rcp(size_t p,int threads = 0) const;
-    BigFloat div(const BigFloat &x,size_t p,int threads = 0) const;
+    BigFloat add(const BigFloat &x, size_t p = 0) const;
+    BigFloat sub(const BigFloat &x, size_t p = 0) const;
+    BigFloat mul(const BigFloat &x, size_t p = 0, int threads = 0) const;
+    BigFloat rcp(size_t p, int threads = 0) const;
+    BigFloat div(const BigFloat &x, size_t p, int threads = 0) const;
 
 private:
     bool sign;      //  true = positive or zero, false = negative
@@ -426,14 +426,14 @@ private:
     std::unique_ptr<uint32_t[]> T;
 
     //  Internal helpers
-    int64_t to_string_trimmed(size_t digits,std::string &str) const;
+    int64_t to_string_trimmed(size_t digits, std::string &str) const;
     int ucmp(const BigFloat &x) const;
-    BigFloat uadd(const BigFloat &x,size_t p) const;
-    BigFloat usub(const BigFloat &x,size_t p) const;
+    BigFloat uadd(const BigFloat &x, size_t p) const;
+    BigFloat usub(const BigFloat &x, size_t p) const;
 
-    friend BigFloat invsqrt(uint32_t x,size_t p,int threads);
+    friend BigFloat invsqrt(uint32_t x, size_t p, int threads);
 };
-BigFloat invsqrt(uint32_t x,size_t p);
+BigFloat invsqrt(uint32_t x, size_t p);
 ////////////////////////////////////////////////////////////////////////////////
 //  Move operators
 BigFloat::BigFloat(BigFloat &&x)
@@ -465,7 +465,7 @@ BigFloat::BigFloat()
     , exp(0)
     , L(0)
 {}
-BigFloat::BigFloat(uint32_t x,bool sign_)
+BigFloat::BigFloat(uint32_t x, bool sign_)
     : sign(true)
     , exp(0)
     , L(1)
@@ -483,7 +483,7 @@ BigFloat::BigFloat(uint32_t x,bool sign_)
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  String Conversion
-int64_t BigFloat::to_string_trimmed(size_t digits,std::string &str) const{
+int64_t BigFloat::to_string_trimmed(size_t digits, std::string &str) const{
     //  Converts this object to a string with "digits" significant figures.
 
     //  After calling this function, the following expression is equal to the
@@ -555,7 +555,7 @@ std::string BigFloat::to_string(size_t digits) const{
 
     //  Convert
     std::string str;
-    int64_t exponent = to_string_trimmed(digits,str);
+    int64_t exponent = to_string_trimmed(digits, str);
 
     //  Less than 1
     if (mag == 0){
@@ -578,7 +578,7 @@ std::string BigFloat::to_string(size_t digits) const{
     }
 
     //  Get digits after the decimal place.
-    std::string after_decimal = str.substr((size_t)(str.size() + exponent),(size_t)-exponent);
+    std::string after_decimal = str.substr((size_t)(str.size() + exponent), (size_t)-exponent);
 
     if (sign){
         return before_decimal + "." + after_decimal;
@@ -593,7 +593,7 @@ std::string BigFloat::to_string_sci(size_t digits) const{
 
     //  Convert
     std::string str;
-    int64_t exponent = to_string_trimmed(digits,str);
+    int64_t exponent = to_string_trimmed(digits, str);
 
     //  Strip leading zeros.
     {
@@ -605,7 +605,7 @@ std::string BigFloat::to_string_sci(size_t digits) const{
 
     //  Insert decimal place
     exponent += str.size() - 1;
-    str = str.substr(0,1) + "." + &str[1];
+    str = str.substr(0, 1) + "." + &str[1];
 
     //  Add exponent
     if (exponent != 0){
@@ -706,14 +706,14 @@ BigFloat BigFloat::mul(uint32_t x) const{
 
     return z;
 }
-BigFloat BigFloat::uadd(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::uadd(const BigFloat &x, size_t p) const{
     //  Perform addition ignoring the sign of the two operands.
 
     //  Magnitude
     int64_t magA = exp + L;
     int64_t magB = x.exp + x.L;
-    int64_t top = std::max(magA,magB);
-    int64_t bot = std::min(exp,x.exp);
+    int64_t top = std::max(magA, magB);
+    int64_t bot = std::min(exp, x.exp);
 
     //  Target length
     int64_t TL = top - bot;
@@ -760,7 +760,7 @@ BigFloat BigFloat::uadd(const BigFloat &x,size_t p) const{
 
     return z;
 }
-BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::usub(const BigFloat &x, size_t p) const{
     //  Perform subtraction ignoring the sign of the two operands.
 
     //  "this" must be greater than or equal to x. Otherwise, the behavior
@@ -769,8 +769,8 @@ BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
     //  Magnitude
     int64_t magA = exp + L;
     int64_t magB = x.exp + x.L;
-    int64_t top = std::max(magA,magB);
-    int64_t bot = std::min(exp,x.exp);
+    int64_t top = std::max(magA, magB);
+    int64_t bot = std::min(exp, x.exp);
 
     //  Truncate precision
     int64_t TL = top - bot;
@@ -820,7 +820,7 @@ BigFloat BigFloat::usub(const BigFloat &x,size_t p) const{
 
     return z;
 }
-BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::add(const BigFloat &x, size_t p) const{
     //  Addition
 
     //  The target precision is p.
@@ -829,16 +829,16 @@ BigFloat BigFloat::add(const BigFloat &x,size_t p) const{
 
     //  Same sign. Add.
     if (sign == x.sign)
-        return uadd(x,p);
+        return uadd(x, p);
 
     //  this > x
     if (ucmp(x) > 0)
-        return usub(x,p);
+        return usub(x, p);
 
     //  this < x
-    return x.usub(*this,p);
+    return x.usub(*this, p);
 }
-BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
+BigFloat BigFloat::sub(const BigFloat &x, size_t p) const{
     //  Subtraction
 
     //  The target precision is p.
@@ -847,18 +847,18 @@ BigFloat BigFloat::sub(const BigFloat &x,size_t p) const{
 
     //  Different sign. Add.
     if (sign != x.sign)
-        return uadd(x,p);
+        return uadd(x, p);
 
     //  this > x
     if (ucmp(x) > 0)
-        return usub(x,p);
+        return usub(x, p);
 
     //  this < x
-    BigFloat z = x.usub(*this,p);
+    BigFloat z = x.usub(*this, p);
     z.negate();
     return z;
 }
-BigFloat BigFloat::mul(const BigFloat &x,size_t p,int tds) const{
+BigFloat BigFloat::mul(const BigFloat &x, size_t p, int tds) const{
     //  Multiplication
 
     //  The target precision is p.
@@ -924,26 +924,26 @@ BigFloat BigFloat::mul(const BigFloat &x,size_t p,int tds) const{
     //  3 digits per point is small enough to not encounter round-off error
     //  until a transform size of 2^30.
     //  A transform length of 2^29 allows for the maximum product size to be
-    //  2^29 * 3 = 1,610,612,736 decimal digits.
+    //  2^29 * 3 = 1, 610, 612, 736 decimal digits.
     if (k > 29)
         throw "FFT size limit exceeded.";
 
     //  Allocate FFT arrays
     SIMD_delete deletor;
-    auto Ta = std::unique_ptr<__m128d[],SIMD_delete>((__m128d*)_mm_malloc(length * sizeof(__m128d),16),deletor);
-    auto Tb = std::unique_ptr<__m128d[],SIMD_delete>((__m128d*)_mm_malloc(length * sizeof(__m128d),16),deletor);
+    auto Ta = std::unique_ptr<__m128d[], SIMD_delete>((__m128d*)_mm_malloc(length * sizeof(__m128d), 16), deletor);
+    auto Tb = std::unique_ptr<__m128d[], SIMD_delete>((__m128d*)_mm_malloc(length * sizeof(__m128d), 16), deletor);
 
     //  Make sure the twiddle table is big enough.
     if ((int)twiddle_table.size() - 1 < k)
         throw "Table is not large enough.";
 
-    int_to_fft(Ta.get(),k,AT,AL);           //  Convert 1st operand
-    int_to_fft(Tb.get(),k,BT,BL);           //  Convert 2nd operand
-    fft_forward(Ta.get(),k,tds);            //  Transform 1st operand
-    fft_forward(Tb.get(),k,tds);            //  Transform 2nd operand
-    fft_pointwise(Ta.get(),Tb.get(),k);     //  Pointwise multiply
-    fft_inverse(Ta.get(),k,tds);            //  Perform inverse transform.
-    fft_to_int(Ta.get(),k,z.T.get(),z.L);   //  Convert back to word array.
+    int_to_fft(Ta.get(), k, AT, AL);           //  Convert 1st operand
+    int_to_fft(Tb.get(), k, BT, BL);           //  Convert 2nd operand
+    fft_forward(Ta.get(), k, tds);            //  Transform 1st operand
+    fft_forward(Tb.get(), k, tds);            //  Transform 2nd operand
+    fft_pointwise(Ta.get(), Tb.get(), k);     //  Pointwise multiply
+    fft_inverse(Ta.get(), k, tds);            //  Perform inverse transform.
+    fft_to_int(Ta.get(), k, z.T.get(), z.L);   //  Convert back to word array.
 
     //  Check top word and correct length.
     if (z.T[z.L - 1] == 0)
@@ -951,7 +951,7 @@ BigFloat BigFloat::mul(const BigFloat &x,size_t p,int tds) const{
 
     return z;
 }
-BigFloat BigFloat::rcp(size_t p,int tds) const{
+BigFloat BigFloat::rcp(size_t p, int tds) const{
     //  Compute reciprocal using Newton's Method.
 
     //  r1 = r0 - (r0 * x - 1) * r0
@@ -1013,16 +1013,16 @@ BigFloat BigFloat::rcp(size_t p,int tds) const{
     if (p == 2) s = 1;
 
     //  Recurse at half the precision
-    BigFloat T = rcp(s,tds);
+    BigFloat T = rcp(s, tds);
 
     //  r1 = r0 - (r0 * x - 1) * r0
-    return T.sub(this->mul(T,p,tds).sub(BigFloat(1),p).mul(T,p,tds),p);
+    return T.sub(this->mul(T, p, tds).sub(BigFloat(1), p).mul(T, p, tds), p);
 }
-BigFloat BigFloat::div(const BigFloat &x,size_t p,int tds) const{
+BigFloat BigFloat::div(const BigFloat &x, size_t p, int tds) const{
     //  Division
-    return this->mul(x.rcp(p,tds),p,tds);
+    return this->mul(x.rcp(p, tds), p, tds);
 }
-BigFloat invsqrt(uint32_t x,size_t p,int tds){
+BigFloat invsqrt(uint32_t x, size_t p, int tds){
     //  Compute inverse square root using Newton's Method.
 
     //            (  r0^2 * x - 1  )
@@ -1065,15 +1065,15 @@ BigFloat invsqrt(uint32_t x,size_t p,int tds){
     if (p == 2) s = 1;
 
     //  Recurse at half the precision
-    BigFloat T = invsqrt(x,s,tds);
+    BigFloat T = invsqrt(x, s, tds);
 
-    BigFloat temp = T.mul(T,p);     //  r0^2
-    temp = temp.mul(x,p,tds);       //  r0^2 * x
-    temp = temp.sub(BigFloat(1),p); //  r0^2 * x - 1
+    BigFloat temp = T.mul(T, p);     //  r0^2
+    temp = temp.mul(x, p, tds);       //  r0^2 * x
+    temp = temp.sub(BigFloat(1), p); //  r0^2 * x - 1
     temp = temp.mul(500000000);         //  (r0^2 * x - 1) / 2
     temp.exp--;
-    temp = temp.mul(T,p,tds);       //  (r0^2 * x - 1) / 2 * r0
-    return T.sub(temp,p);           //  r0 - (r0^2 * x - 1) / 2 * r0
+    temp = temp.mul(T, p, tds);       //  (r0^2 * x - 1) / 2 * r0
+    return T.sub(temp, p);           //  r0 - (r0^2 * x - 1) / 2 * r0
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1118,7 +1118,7 @@ size_t e_terms(size_t p){
 
     return b + 2;
 }
-void e_BSR(BigFloat &P,BigFloat &Q,uint32_t a,uint32_t b,int tds = 1){
+void e_BSR(BigFloat &P, BigFloat &Q, uint32_t a, uint32_t b, int tds = 1){
     //  Binary Splitting recursion for exp(1).
 
     if (b - a == 1){
@@ -1129,12 +1129,12 @@ void e_BSR(BigFloat &P,BigFloat &Q,uint32_t a,uint32_t b,int tds = 1){
 
     uint32_t m = (a + b) / 2;
 
-    BigFloat P0,Q0,P1,Q1;
+    BigFloat P0, Q0, P1, Q1;
 
     if (b - a < 1000 || tds < 2){
         //  No more threads.
-        e_BSR(P0,Q0,a,m);
-        e_BSR(P1,Q1,m,b);
+        e_BSR(P0, Q0, a, m);
+        e_BSR(P1, Q1, m, b);
     }else{
         //  Run sub-recursions in parallel.
         int tds0 = tds / 2;
@@ -1143,18 +1143,18 @@ void e_BSR(BigFloat &P,BigFloat &Q,uint32_t a,uint32_t b,int tds = 1){
         {
             int tid = omp_get_thread_num();
             if (tid == 0){
-                e_BSR(P0,Q0,a,m,tds0);
+                e_BSR(P0, Q0, a, m, tds0);
             }
             if (tid != 0 || omp_get_num_threads() < 2){
-                e_BSR(P1,Q1,m,b,tds1);
+                e_BSR(P1, Q1, m, b, tds1);
             }
         }
     }
 
-    P = P0.mul(Q1,0,tds).add(P1);
-    Q = Q0.mul(Q1,0,tds);
+    P = P0.mul(Q1, 0, tds).add(P1);
+    Q = Q0.mul(Q1, 0, tds);
 }
-void e(size_t digits,int tds){
+void e(size_t digits, int tds){
     //  The leading 2 doesn't count.
     digits++;
 
@@ -1171,24 +1171,24 @@ void e(size_t digits,int tds){
     double time0 = wall_clock();
 
     cout << "Summing Series... " << terms << " terms" << endl;
-    BigFloat P,Q;
-    e_BSR(P,Q,0,(uint32_t)terms,tds);
+    BigFloat P, Q;
+    e_BSR(P, Q, 0, (uint32_t)terms, tds);
     double time1 = wall_clock();
     cout << "Time: " << time1 - time0 << endl;
 
     cout << "Division... " << endl;
-    P = P.div(Q,p,tds).add(BigFloat(1),p);
+    P = P.div(Q, p, tds).add(BigFloat(1), p);
     double time2 = wall_clock();
     cout << "Time: " << time2 - time1 << endl;
 
     cout << "Total Time = " << time2 - time0 << endl << endl;
 
-    dump_to_file("e.txt",P.to_string(digits));
+    dump_to_file("e.txt", P.to_string(digits));
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //  Pi
-void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p,int tds = 1){
+void Pi_BSR(BigFloat &P, BigFloat &Q, BigFloat &R, uint32_t a, uint32_t b, size_t p, int tds = 1){
     //  Binary Splitting recursion for the Chudnovsky Formula.
 
     if (b - a == 1){
@@ -1215,12 +1215,12 @@ void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p,i
 
     uint32_t m = (a + b) / 2;
 
-    BigFloat P0,Q0,R0,P1,Q1,R1;
+    BigFloat P0, Q0, R0, P1, Q1, R1;
 
     if (b - a < 1000 || tds < 2){
         //  No more threads.
-        Pi_BSR(P0,Q0,R0,a,m,p);
-        Pi_BSR(P1,Q1,R1,m,b,p);
+        Pi_BSR(P0, Q0, R0, a, m, p);
+        Pi_BSR(P1, Q1, R1, m, b, p);
     }else{
         //  Run sub-recursions in parallel.
         int tds0 = tds / 2;
@@ -1229,19 +1229,19 @@ void Pi_BSR(BigFloat &P,BigFloat &Q,BigFloat &R,uint32_t a,uint32_t b,size_t p,i
         {
             int tid = omp_get_thread_num();
             if (tid == 0){
-                Pi_BSR(P0,Q0,R0,a,m,p,tds0);
+                Pi_BSR(P0, Q0, R0, a, m, p, tds0);
             }
             if (tid != 0 || omp_get_num_threads() < 2){
-                Pi_BSR(P1,Q1,R1,m,b,p,tds1);
+                Pi_BSR(P1, Q1, R1, m, b, p, tds1);
             }
         }
     }
 
-    P = P0.mul(Q1,p,tds).add(P1.mul(R0,p,tds),p);
-    Q = Q0.mul(Q1,p,tds);
-    R = R0.mul(R1,p,tds);
+    P = P0.mul(Q1, p, tds).add(P1.mul(R0, p, tds), p);
+    Q = Q0.mul(Q1, p, tds);
+    R = R0.mul(R1, p, tds);
 }
-void Pi(size_t digits,int tds){
+void Pi(size_t digits, int tds){
     //  The leading 3 doesn't count.
     digits++;
 
@@ -1258,31 +1258,31 @@ void Pi(size_t digits,int tds){
     double time0 = wall_clock();
 
     cout << "Summing Series... " << terms << " terms" << endl;
-    BigFloat P,Q,R;
-    Pi_BSR(P,Q,R,0,(uint32_t)terms,p,tds);
-    P = Q.mul(13591409).add(P,p);
+    BigFloat P, Q, R;
+    Pi_BSR(P, Q, R, 0, (uint32_t)terms, p, tds);
+    P = Q.mul(13591409).add(P, p);
     Q = Q.mul(4270934400);
     double time1 = wall_clock();
     cout << "Time: " << time1 - time0 << endl;
 
     cout << "Division... " << endl;
-    P = Q.div(P,p,tds);
+    P = Q.div(P, p, tds);
     double time2 = wall_clock();
     cout << "Time: " << time2 - time1 << endl;
 
     cout << "InvSqrt... " << endl;
-    Q = invsqrt(10005,p,tds);
+    Q = invsqrt(10005, p, tds);
     double time3 = wall_clock();
     cout << "Time: " << time3 - time2 << endl;
 
     cout << "Final Multiply... " << endl;
-    P = P.mul(Q,p,tds);
+    P = P.mul(Q, p, tds);
     double time4 = wall_clock();
     cout << "Time: " << time4 - time3 << endl;
 
     cout << "Total Time = " << time4 - time0 << endl << endl;
 
-    dump_to_file("pi.txt",P.to_string(digits));
+    dump_to_file("pi.txt", P.to_string(digits));
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1307,8 +1307,8 @@ int main(){
     Mini_Pi::fft_ensure_table(k);
 
 
-    Mini_Pi::e (digits,threads);
-    Mini_Pi::Pi(digits,threads);
+    Mini_Pi::e (digits, threads);
+    Mini_Pi::Pi(digits, threads);
 
 #ifdef _WIN32
     system("pause");

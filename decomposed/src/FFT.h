@@ -24,7 +24,7 @@ void ensure_FFT_tables(size_t CL);
 //      -   AL and BL are the lengths of A and B.
 //      -   AL + BL is the length of C.
 //      -   A, B, and C point the start of a little-endian array big integer.
-void multiply_FFT(uint32_t* C,const uint32_t* A,size_t AL,const uint32_t* B,size_t BL);
+void multiply_FFT(uint32_t* C, const uint32_t* A, size_t AL, const uint32_t* B, size_t BL);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
