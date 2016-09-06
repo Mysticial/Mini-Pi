@@ -13,6 +13,10 @@
 #define USE_CHRONO 1
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)   //  fopen() deprecation
+#endif
+
 #if USE_CHRONO
 #include <chrono>
 #else

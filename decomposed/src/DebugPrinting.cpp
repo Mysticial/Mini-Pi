@@ -27,7 +27,7 @@ complex<double> rand_complex(){
     return complex<double>(r, i);
 }
 void print_fft(complex<double> *T, int k){
-    int length = 1 << k;
+    int length = (size_t)1 << k;
     for (int c = 0; c < length; c++){
         std::cout << T[c].real() << " + " << T[c].imag() << "i" << " , ";
     }

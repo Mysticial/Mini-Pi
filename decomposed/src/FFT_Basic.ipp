@@ -33,7 +33,7 @@ void fft_forward(complex<double> *T, int k){
     if (k == 0)
         return;
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     size_t half_length = length / 2;
 
     double omega = 2 * PI / length;
@@ -73,7 +73,7 @@ void fft_inverse(complex<double> *T, int k){
     if (k == 0)
         return;
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     size_t half_length = length / 2;
 
     double omega = -2 * PI / length;
@@ -106,7 +106,7 @@ void fft_pointwise(complex<double> *T, const complex<double> *A, int k){
     //  -   T           -   Pointer to array.
     //  -   k           -   2^k is the size of the transform
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     for (size_t c = 0; c < length; c++){
         T[c] = T[c] * A[c];
     }
@@ -120,7 +120,7 @@ void int_to_fft(complex<double> *T, int k, const uint32_t *A, size_t AL){
     //  -   A   -   word array
     //  -   AL  -   length of word array
 
-    size_t fft_length = 1 << k;
+    size_t fft_length = (size_t)1 << k;
     complex<double> *Tstop = T + fft_length;
 
     //  Since there are 9 digits per word and we want to put 3 digits per
@@ -153,7 +153,7 @@ void fft_to_int(const complex<double> *T, int k, uint32_t *A, size_t AL){
     //  -   AL  -   length of word array
 
     //  Compute Scaling Factor
-    size_t fft_length = 1 << k;
+    size_t fft_length = (size_t)1 << k;
     double scale = 1. / fft_length;
 
     //  Since there are 9 digits per word and we want to put 3 digits per
