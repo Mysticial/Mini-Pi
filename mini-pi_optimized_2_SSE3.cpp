@@ -28,6 +28,10 @@
 #define USE_CHRONO 1
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)   //  fopen() deprecation
+#endif
+
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -105,7 +109,7 @@ void fft_ensure_table(int k){
         fft_ensure_table(k - 1);
     }
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     double omega = 2 * M_PI / length;
     length /= 2;
 
@@ -141,7 +145,7 @@ void fft_forward(__m128d *T, int k){
         return;
     }
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     size_t half_length = length / 2;
 
     //  Get local twiddle table.
@@ -198,7 +202,7 @@ void fft_inverse(__m128d *T, int k){
         return;
     }
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     size_t half_length = length / 2;
 
     //  Recursively perform FFT on lower elements.
@@ -243,7 +247,7 @@ void fft_pointwise(__m128d *T, __m128d *A, int k){
     //  -   T           -   Pointer to array.
     //  -   k           -   2^k is the size of the transform
 
-    size_t length = 1 << k;
+    size_t length = (size_t)1 << k;
     for (size_t c = 0; c < length; c++){
         __m128d a0 = T[c];
         __m128d b0 = A[c];
@@ -262,7 +266,7 @@ void int_to_fft(__m128d *T, int k, const uint32_t *A, size_t AL){
     //  -   A   -   word array
     //  -   AL  -   length of word array
 
-    size_t fft_length = 1 << k;
+    size_t fft_length = (size_t)1 << k;
     __m128d *Tstop = T + fft_length;
 
     //  Since there are 9 digits per word and we want to put 3 digits per
@@ -295,7 +299,7 @@ void fft_to_int(__m128d *T, int k, uint32_t *A, size_t AL){
     //  -   AL  -   length of word array
 
     //  Compute Scaling Factor
-    size_t fft_length = 1 << k;
+    size_t fft_length = (size_t)1 << k;
     double scale = 1. / fft_length;
 
     //  Since there are 9 digits per word and we want to put 3 digits per
@@ -882,7 +886,7 @@ BigFloat BigFloat::mul(const BigFloat &x, size_t p) const{
     //  3 digits per point is small enough to not encounter round-off error
     //  until a transform size of 2^30.
     //  A transform length of 2^29 allows for the maximum product size to be
-    //  2^29 * 3 = 1, 610, 612, 736 decimal digits.
+    //  2^29 * 3 = 1,610,612,736 decimal digits.
     if (k > 29)
         throw "FFT size limit exceeded.";
 
