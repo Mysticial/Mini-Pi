@@ -863,7 +863,7 @@ BigFloat BigFloat::mul(const BigFloat &x, size_t p) const{
 
     //  Compute basic fields.
     BigFloat z;
-    z.sign = sign == z.sign;    //  Sign is positive if signs are equal.
+    z.sign = sign == x.sign;    //  Sign is positive if signs are equal.
     z.exp  = Aexp + Bexp;       //  Add the exponents.
     z.L    = AL + BL;           //  Add the lenghts for now. May need to correct later.
 
