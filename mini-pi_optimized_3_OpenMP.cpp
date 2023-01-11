@@ -161,7 +161,7 @@ void fft_forward(__m128d *T, int k, int tds = 1){
 
     //  Perform FFT reduction into two halves.
 //#pragma omp parallel for num_threads(tds)
-    for (int c = 0; c < half_length; c++){
+    for (size_t c = 0; c < half_length; c++){
         //  Grab Twiddle Factor
         __m128d r0 = _mm_loaddup_pd(&local_table[c].r);
         __m128d i0 = _mm_loaddup_pd(&local_table[c].i);
@@ -257,7 +257,7 @@ void fft_inverse(__m128d *T, int k, int tds = 1){
 
     //  Perform FFT reduction into two halves.
 //#pragma omp parallel for num_threads(tds)
-    for (int c = 0; c < half_length; c++){
+    for (size_t c = 0; c < half_length; c++){
         //  Grab Twiddle Factor
         __m128d r0 = _mm_loaddup_pd(&local_table[c].r);
         __m128d i0 = _mm_loaddup_pd(&local_table[c].i);
