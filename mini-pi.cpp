@@ -38,6 +38,7 @@
 #include <memory>
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::complex;
 
@@ -1159,9 +1160,37 @@ void Pi(size_t digits){
 }   //  Namespace: Mini_Pi
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-int main(){
+
+int string_to_double(const char *a, double *r, const double min, const double max) {
+  char *p;
+  double d = strtod(a, &p);
+  if ((p == a) || (*p != 0) || errno == ERANGE || (d < min ) || (d > max ) ) {
+    cerr << "ERROR when parsing \"" << a << "\" as double value. Expecting number in range " << min << " - " << max << " in double notation, see \"man strtod\" for details." << endl;
+    return 1;
+  }
+  *r = d;
+  return 0;
+}
+
+int main(int argc, char** argv){
 
     size_t digits = 1000000;
+    bool parsing_passed = false;
+
+    if ( argc == 2 ) {
+      double x;
+      if ( string_to_double(argv[1], &x, 1000, 800e6) == 0 ) {
+        parsing_passed = true;
+        digits = x;
+      }
+    }
+
+    if (argc >2 || ! parsing_passed) {
+      cerr << "Unsupported number of arguments" << endl;
+      cerr << "Usage: " << argv[0] << " [digits] (max 800 millions). Input in double notation (800e6)" << endl;
+      cerr << "Default value: " << digits << " digits." << endl;
+      return EXIT_FAILURE;
+    }
 
     Mini_Pi::e (digits);
     Mini_Pi::Pi(digits);
